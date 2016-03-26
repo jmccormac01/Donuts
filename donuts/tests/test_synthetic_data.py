@@ -1,4 +1,4 @@
-from .synthetic_data import generate_synthetic_data
+from .synthetic_data import generate_synthetic_data, generate_background
 
 
 def test_generate_shape():
@@ -9,7 +9,8 @@ def test_generate_shape():
 def test_background_level():
     background_level = 100
     background_sigma = 0.01
-    data = generate_synthetic_data(
+    data = generate_background(
+        shape=(10, 10),
         background_level=background_level,
         background_sigma=background_sigma,
     )
@@ -17,4 +18,3 @@ def test_background_level():
     expected_min = 95
     expected_max = 105
     assert expected_min < data[0][0] < expected_max
-
