@@ -4,7 +4,7 @@ A science frame autoguiding and image alignment algorithm with sub-pixel precisi
 
 ## Motivation
 
-We have access to or own several telescopes (NGTS, NITES, Warwick 1m, 1.5m San Pedro Martir) that require precise autoguiding. Sometimes we must defocus the telescope for various reasons, but we'd still like to autoguide. Donuts was designed to allow this. It had to be simple, fast and accurate. It works well as an autoguiding algorithm for equatorial telescopes (no field rotation). 
+We operate and have access to several telescopes (NGTS, NITES, Warwick 1m, 1.5m San Pedro Martir) that require precise autoguiding. Sometimes we must defocus the telescope for various reasons, but we'd still like to autoguide. Donuts was designed to allow this. It had to be simple, fast and accurate. It works well as an autoguiding algorithm for equatorial telescopes (no field rotation). 
 
 The process for aligning apertures for photometry is essentially the reverse. Rather than the telescope pointing being corrected. The apertures must track the drift of the stars. Donuts can therefore be used to track the stellar positions for CCD photometry also. 
 
