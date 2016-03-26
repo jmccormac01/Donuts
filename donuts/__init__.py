@@ -16,3 +16,5 @@ if not _ASTROPY_SETUP_:
     from scipy.fftpack import fft, ifft
     from scipy import ndimage, conjugate, polyfit, polyval
     import numpy as np  
+
+from .donuts import Donuts

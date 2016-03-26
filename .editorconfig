@@ -1,0 +1,12 @@
+root = true
+
+[*]
+charset = utf-8
+
+[*.py]
+indent_style = tab
+indent_size = 8
+
+[.travis.yml]
+indent_style = space
+indent_size = 2
