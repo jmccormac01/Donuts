@@ -1,27 +1,64 @@
+"""Docstring for Donuts module
+"""
+
 from __future__ import print_function, division
 import numpy as np
 from astropy.io import fits
-from scipy.fftpack import fft, ifft
-from scipy import ndimage, conjugate, polyfit
+from scipy.fftpack import fft
+from scipy.fftpack import ifft
+from scipy import ndimage
+from scipy import conjugate
+from scipy import polyfit
 
 # to do:
+#   add try/except for opening images etc
+#   set flag when reference image is made, do not run check if no reference
+#
 #   add sphinx documentation
 #   write tests
 #   check for PEP008
 #
 
 class Donuts(object):
+    """Docstring for Donuts class"""
+
     def __init__(self, refimage, image_ext=0, exposure='EXPTIME',
                  normalise=True, subtract_bkg=True, prescan_width=0,
-                 boarder=64, overscan_width=0, ntiles=32):
-        '''
-        Generate a reference image for measuring frame to frame offsets.
-        Assume the following defaults:
-            Normalise the image to ADU/s = True
-            N tiles used in the background subtraction = 32
+                 overscan_width=0, boarder=64, ntiles=32):
+        """Initialise and generate a reference image.
+        This reference image is used for measuring frame to frame offsets.
 
-        Look up proper docstrings
-        '''
+        Parameters
+        ----------
+        refimage : str
+            The image representing the reference frame.
+        image_ext: int, optional
+            The fits image extension to extract. The default is 0.
+        exposure : str, optional
+            Fits header keyword for exposure time. The default is `EXPTIME`.
+        normalise : bool, optional
+            Convert image counts to counts/s. The default is True.
+        subtract_bkg : bool, optional
+            Subtract the sky background. The default is True.
+        prescan_width : int, optional
+            Width of prescan region (left) in pixels. The default is 0.
+        overscan_width : int, optional
+            Width of overscan region (right) in pixels. The default is 0.
+        boarder : int, optional
+            Width of exclusion area to avoid errors from CCD edge effects.
+            The default is 64.
+        ntiles : int, optional
+            Number of tiles used to sample the sky background.
+            The default is 32.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        None
+        """
         self.image_ext = image_ext
         self.ntiles = ntiles
         self.normalise = normalise
@@ -30,7 +67,17 @@ class Donuts(object):
         self.prescan_width = prescan_width
         self.overscan_width = overscan_width
         self.boarder = boarder
+        self.solution_n_x = 0.0
+        self.solution_n_y = 0.0
         self.base = 512
+
+        # define here first or pylint cries
+        self.checkimage = None
+        self.check_data = None
+        self.check_image_section = None
+        self.check_bkgmap = None
+        self.check_xproj = None
+        self.check_yproj = None
 
         h = fits.open(refimage)
         self.texp = float(h[self.image_ext].header[exposure])
@@ -75,10 +122,30 @@ class Donuts(object):
         self.y = np.linspace(0, self.ref_data.shape[0], self.ref_data.shape[0])
 
     def __generate_bkg_map(self, data, tile_num, tilesizex, tilesizey):
-        '''
-        Create a background map to subtract from each image
-        before doing the cross correlation
-        '''
+        """Create a background map.
+        This map may be subtracted from each image before doing the cross correlation
+
+        Parameters
+        ----------
+        data : array-like
+            Image array from which to measure sky background
+        tile_num : int
+            Number of tiles along each axis
+        tilesizex : int
+            Size of tiles in X, pixels
+        tilesizey : int
+            Size of tiles in Y, pixels
+
+        Returns
+        -------
+        bkgmap : array-like
+            2D map of sky background. This can then be subtracted
+            from each image to improve the shift measurement
+
+        Raises
+        ------
+        None
+        """
         # create coarse map
         coarse = np.empty((tile_num, tile_num))
         for i in range(0, tile_num):
@@ -90,9 +157,20 @@ class Donuts(object):
         return bkgmap
 
     def print_summary(self):
-        '''
-        Print a summary of the settings we've chosen
-        '''
+        """Print a summary of the current settings
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        None
+        """
         print('Data Summary:')
         print('\tIlluminated array size: {0:d} x {1:d} pixels'.format(self.dx, self.dy))
         print('\tExcluding a boarder of {0:d} pixels'.format(self.boarder))
@@ -104,10 +182,25 @@ class Donuts(object):
             print('\tEach {0:d} x {1:d} pixels'.format(self.tilesizex, self.tilesizey))
 
     def measure_shift(self, checkimage):
-        '''
-        Generate a check image using the same setup as the reference, then
-        measure the shift between each image and the reference
-        '''
+        """Generate a check image and measure its offset from the reference
+        This is done using the same settings as the reference image.
+
+        Parameters
+        ----------
+        checkimage : str
+            Image filename to compare to reference image
+
+        Returns
+        -------
+        solution_n_x : float
+            The shift required, in X, to recentre the checkimage into the reference frame
+        solution_n_y : float
+            The shift required, in Y, to recentre the checkimage into the reference frame
+
+        Raises
+        ------
+        None
+        """
         self.checkimage = checkimage
         h = fits.open(self.checkimage)
         self.check_image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
@@ -121,16 +214,13 @@ class Donuts(object):
             self.check_data = self.check_data - self.check_bkgmap
         if self.normalise:
             self.check_data = self.check_data / self.texp
-        
         self.check_xproj = np.sum(self.check_data, axis=0)
         self.check_yproj = np.sum(self.check_data, axis=1)
-
         # FFT of the projection spectra
         f_ref_xproj_n = fft(self.ref_xproj)
         f_ref_yproj_n = fft(self.ref_yproj)
         f_check_xproj_n = fft(self.check_xproj)
         f_check_yproj_n = fft(self.check_yproj)
-        
         # cross correlate in and look for the maximium correlation
         f_ref_xproj_conj_n = conjugate(f_ref_xproj_n)
         f_ref_yproj_conj_n = conjugate(f_ref_yproj_n)
@@ -142,13 +232,11 @@ class Donuts(object):
         z_pos_x_n = np.where(phi_ref_check_m_x_n == z_x_n)
         z_y_n = max(phi_ref_check_m_y_n)
         z_pos_y_n = np.where(phi_ref_check_m_y_n == z_y_n)
-            
         # turn the location of the maximum into shift in pixels
         # quadratically interpolate over the 3 pixels surrounding
         # the peak in the CCF. This gives sub pixel resolution.
         tst_y = np.empty(3)
         tst_x = np.empty(3)
-        
         # X
         if z_pos_x_n[0][0] <= len(phi_ref_check_m_x_n) / 2:
             lra_x = [z_pos_x_n[0][0] - 1, z_pos_x_n[0][0], z_pos_x_n[0][0] + 1]
@@ -179,7 +267,6 @@ class Donuts(object):
             coeffs_n_x = polyfit(lra_x, tst_x, 2)
             self.solution_n_x = -coeffs_n_x[1] / (2 * coeffs_n_x[0])
         print("X: {0:.2f}".format(self.solution_n_x))
-        
         # Y
         if z_pos_y_n[0][0] <= len(phi_ref_check_m_y_n)/2:
             lra_y = [z_pos_y_n[0][0] - 1, z_pos_y_n[0][0], z_pos_y_n[0][0] + 1]
@@ -196,7 +283,7 @@ class Donuts(object):
             coeffs_n_y = polyfit(lra_y, tst_y, 2)
             self.solution_n_y = len(phi_ref_check_m_y_n) + (coeffs_n_y[1] / (2 * coeffs_n_y[0]))
         if z_pos_y_n[0][0] == len(phi_ref_check_m_y_n) - 1:
-            lra_y = [-1, 0, 1] 
+            lra_y = [-1, 0, 1]
             tst_y[0] = phi_ref_check_m_y_n[-2].real
             tst_y[1] = phi_ref_check_m_y_n[-1].real
             tst_y[2] = phi_ref_check_m_y_n[0].real
@@ -211,3 +298,5 @@ class Donuts(object):
             self.solution_n_y = -coeffs_n_y[1] / (2 * coeffs_n_y[0])
         print("Y: {0:.2f}".format(self.solution_n_y))
         return self.solution_n_x, self.solution_n_y
+
+
