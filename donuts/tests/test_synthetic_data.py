@@ -1,11 +1,14 @@
+import numpy as np
 from .synthetic_data import (generate_synthetic_data,
                              generate_background,
                              generate_signals,
                             )
 
+np.random.seed(42)
+
 
 def test_generate_shape():
-    data = generate_synthetic_data(shape=(10, 10))
+    data = generate_synthetic_data(positions=[], shape=(10, 10))
     assert data.shape == (10, 10)
 
 
@@ -30,6 +33,7 @@ def test_generate_deltas():
     assert data[positions[0][1], positions[0][0] - 1] == 0.
     assert data[0, 0] == 0.
 
+
 def test_generate_multiple_deltas():
     positions = [(4, 4), (8, 8), (5, 5)]
     data = generate_signals(positions=positions, shape=(10, 10))
@@ -37,3 +41,19 @@ def test_generate_multiple_deltas():
     for position in positions:
         assert data[position] > 0.
         assert data[position[1], position[0] - 1] == 0.
+
+
+def test_generate_synthetic_data():
+    positions = [(50, 50)]
+    peak_height = 1000.
+    data = generate_synthetic_data(
+        shape=(1024, 1024),
+        background_level=100,
+        background_sigma=10,
+        positions=positions,
+        peak_height=peak_height,
+    )
+    for position in positions:
+        assert np.isclose(data[position], peak_height, rtol=0.8)
+
+    assert 20. < data[0, 0] < 150
