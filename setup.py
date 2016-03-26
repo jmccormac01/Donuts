@@ -58,7 +58,7 @@ cmdclassd = register_commands(PACKAGENAME, VERSION, RELEASE)
 
 # Adjust the compiler in case the default on this platform is to use a
 # broken one.
-adjust_compiler(PACKAGENAME)
+# adjust_compiler(PACKAGENAME)
 
 # Freeze build information in version.py
 generate_version_py(PACKAGENAME, VERSION, RELEASE,
@@ -106,7 +106,7 @@ setup(name=PACKAGENAME,
       version=VERSION,
       description=DESCRIPTION,
       scripts=scripts,
-      install_requires=['astropy'],
+      install_requires=['astropy', 'numpy', 'scipy'],
       author=AUTHOR,
       author_email=AUTHOR_EMAIL,
       license=LICENSE,
