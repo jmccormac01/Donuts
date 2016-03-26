@@ -1,6 +1,6 @@
-"""Docstring for Donuts module
+"""A module containing the Donuts class, used for measuring 
+shifts between images in CCD data.
 """
-
 from __future__ import print_function, division
 import numpy as np
 from astropy.io import fits
@@ -13,14 +13,17 @@ from scipy import polyfit
 # to do:
 #   add try/except for opening images etc
 #   set flag when reference image is made, do not run check if no reference
-#
-#   add sphinx documentation
 #   write tests
 #   check for PEP008
 #
 
 class Donuts(object):
-    """Docstring for Donuts class"""
+    """See method docstrings for descriptions
+
+    Attributes
+    ----------
+    None
+    """
 
     def __init__(self, refimage, image_ext=0, exposure='EXPTIME',
                  normalise=True, subtract_bkg=True, prescan_width=0,
