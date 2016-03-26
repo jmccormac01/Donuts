@@ -1,4 +1,6 @@
-from .synthetic_data import generate_synthetic_data, generate_background
+from .synthetic_data import (generate_synthetic_data,
+                             generate_background,
+                             generate_signals)
 
 
 def test_generate_shape():
@@ -18,3 +20,10 @@ def test_background_level():
     expected_min = 95
     expected_max = 105
     assert expected_min < data[0][0] < expected_max
+
+
+def test_generate_deltas():
+    positions = [(4, 4)]
+    data = generate_signals(positions=positions, shape=(10, 10))
+    assert data[positions[0]] > 0.
+    assert data[0, 0] == 0.
