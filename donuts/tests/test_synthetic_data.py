@@ -1,6 +1,7 @@
 from .synthetic_data import (generate_synthetic_data,
                              generate_background,
-                             generate_signals)
+                             generate_signals,
+                            )
 
 
 def test_generate_shape():
@@ -26,4 +27,5 @@ def test_generate_deltas():
     positions = [(4, 4)]
     data = generate_signals(positions=positions, shape=(10, 10))
     assert data[positions[0]] > 0.
+    assert data[positions[0][1], positions[0][0] - 1] == 0.
     assert data[0, 0] == 0.
