@@ -14,7 +14,6 @@ from scipy import polyfit
 #   add try/except for opening images etc
 #   set flag when reference image is made, do not run check if no reference
 #   write tests
-#   check for PEP008
 #
 
 class Donuts(object):
