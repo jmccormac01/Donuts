@@ -36,9 +36,11 @@ The corrections, are those required to adjust the stars back to their location i
 
 ## Contributors
 
-@jmccormac01 & @mindriot101
+[@jmccormac01](https://github.com/jmccormac01) & [@mindriot101](https://github.com/mindriot101)
+
 
 ## License
 
 BSD
-)
+
+
