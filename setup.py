@@ -58,7 +58,7 @@ cmdclassd = register_commands(PACKAGENAME, VERSION, RELEASE)
 
 # Adjust the compiler in case the default on this platform is to use a
 # broken one.
-adjust_compiler(PACKAGENAME)
+# adjust_compiler(PACKAGENAME)
 
 # Freeze build information in version.py
 generate_version_py(PACKAGENAME, VERSION, RELEASE,
