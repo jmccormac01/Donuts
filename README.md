@@ -27,9 +27,10 @@ Documentation will be done with Sphinx - not complete yet.
 
 There is currently a very simple test built into main. This takes three images and measures the shift between them, using the first as the reference. The expected results are:
 
-*Image ID* | X shift (pix) |  Y shift (pix)
-IMAGE80520160114005520.fits | -0.09 | 0.24 
-IMAGE80520160114005533.fits |  0.01 | 0.14 
+|        *Image ID*           | X shift (pix) |  Y shift (pix) |
+| --------------------------- | ------------- | -------------- |
+| IMAGE80520160114005520.fits |    -0.09      |      0.24      |
+| IMAGE80520160114005533.fits |     0.01      |      0.14      |
 
 The corrections, are those required to adjust the stars back to their location in the reference image.
 
