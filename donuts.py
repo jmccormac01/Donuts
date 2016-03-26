@@ -4,54 +4,64 @@ from astropy.io import fits
 from scipy.fftpack import fft, ifft
 from scipy import ndimage, conjugate, polyfit, polyval
 
+# to do:
+# 	add sphinx documentation
+#	write tests
+#	check for PEP008
+#
+
 class Donuts(object):
 	def __init__(self, refimage, image_ext=0, exposure='EXPTIME',
-				 normalise=True, subtract_bkg=True, boarder=64, ntiles=32):
+				 normalise=True, subtract_bkg=True, prescan_width=0, 
+				 boarder = 64, overscan_width=0, ntiles=32):
 		'''
 		Generate a reference image for measuring frame to frame offsets. 
 		Assume the following defaults:
 			Normalise the image to ADU/s = True
-			Edge exclusion boarder = 64 pixels
 			N tiles used in the background subtraction = 32
 
 		Look up proper docstrings	
 		'''
 		self.image_ext = image_ext
-		self.boarder = boarder
 		self.ntiles = ntiles
 		self.normalise = normalise
 		self.refimage = refimage
 		self.subtract_bkg = subtract_bkg
+		self.prescan_width = prescan_width
+		self.overscan_width = overscan_width
+		self.boarder = boarder
+		self.base = 512
 
 		h = fits.open(refimage)
-		self.texp = float(h[image_ext].header[exposure])
+		self.texp = float(h[self.image_ext].header[exposure])
 		# get image dimmensions
-		self.dy, self.dx = h[image_ext].data.shape
+		self.image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
+		self.dy, self.dx = self.image_section.shape
 
 		# check if the CCD is a funny shape. Normal CCDs should divide by 16 with 
 		# no remainder. NITES for example does not (1030,1057) instead of (1024,1024)
-		numx,rx = divmod(dx, 16)
-		numy,ry = divmod(dy, 16)
+		numx,rx = divmod(self.dx, 16)
+		numy,ry = divmod(self.dy, 16)
 		if rx != 0 or ry != 0:
-			self.dimx = (dx / self.base) * self.base
-			self.dimy = (dy / self.base) * self.base
+			self.dimx = int((self.dx / self.base) * self.base)
+			self.dimy = int((self.dy / self.base) * self.base)
 		else:
-			self.dimx = dx
-			self.dimy = dy
+			self.dimx = self.dx
+			self.dimy = self.dy
 
-		# get the reference data, with tweaked shape if needed, excluding boarder
-		self.ref_data = h[self.image_ext].data[self.boarder:self.dimy - self.boarder, self.boarder:self.dimx - self.boarder]
+		# get the reference data, with tweaked shape if needed
+		self.ref_data = self.image_section[self.boarder:self.dimy - self.boarder, self.boarder:self.dimx - self.boarder]
 
-		# working image size
-		self.w_dimy,self.w_dimx = ref_data.shape
+		# get the working image dimensions after removing the boarder
+		self.w_dimx, self.w_dimy = self.ref_data.shape
 
 		# set up tiles for bkg subtract
-		self.tilesizex = self.w_dimx / self.ntiles
-		self.tilesizey = self.w_dimy / self.ntiles
+		self.tilesizex = self.w_dimx // self.ntiles
+		self.tilesizey = self.w_dimy // self.ntiles
 
 		# adjust image if requested
 		if self.subtract_bkg:
-			self.bkgmap = __generate_bkg_map(self.ref_data, self.ntiles, self.tilesizex, self.tilesizey)
+			self.bkgmap = self.__generate_bkg_map(self.ref_data, self.ntiles, self.tilesizex, self.tilesizey)
 			self.ref_data = self.ref_data - self.bkgmap
 		if self.normalise:
 			self.ref_data = self.ref_data / self.texp
@@ -76,21 +86,19 @@ class Donuts(object):
 		bkgmap = ndimage.zoom(coarse, (tilesizey, tilesizex), order=2)
 		return bkgmap
 
-	@property
 	def print_summary(self):
 		'''
 		Print a summary of the settings we've chosen
 		'''
-		print("Data Summary:")
-		print("\tWorking on CCD size: {0:d} x {1:d}".format(self.dimx, self.dimy))
-		print("\tExcluding boarder of {0:d} pixels".format(self.boarder))
-		print("\tCorrections calculated using central: {0:d} x {1:d} pixels".format(self.w_dimx, self.w_dimy))
+		print('Data Summary:')
+		print('\tIlluminated array size: {0:d} x {1:d} pixels'.format(self.dx, self.dy))
+		print('\tExcluding a boarder of {0:d} pixels'.format(self.boarder))
+		print('\tMeasuring shifts from central {0:d} x {1:d} pixels'.format(self.w_dimx, self.w_dimy))
 		if self.subtract_bkg:
-			print("Background Subtraction Summary:")
-			print("\tUsing {0:d} x {1:d} grid of tiles".format(self.ntiles, self.ntiles))
-			print("\tEach {0:d} x {1:d} pixels".format(self.tilesizex, self.tilesizey))
+			print('Background Subtraction Summary:')
+			print('\tUsing {0:d} x {1:d} grid of tiles'.format(self.ntiles, self.ntiles))
+			print('\tEach {0:d} x {1:d} pixels'.format(self.tilesizex, self.tilesizey))
 
-	@property
 	def measure_shift(self,checkimage):
 		'''
 		Generate a check image using the same setup as the reference, then
@@ -98,12 +106,13 @@ class Donuts(object):
 		'''
 		self.checkimage = checkimage
 		h = fits.open(self.checkimage)
-		self.check_data = h[self.image_ext].data[self.boarder:self.dimy - self.boarder, 
-							self.boarder:self.dimx - self.boarder]
-		
+		self.check_image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
+		self.check_data = self.check_image_section[self.boarder:self.dimy - self.boarder, self.boarder:self.dimx - self.boarder]
+
 		# adjust image if requested - same as reference
 		if self.subtract_bkg:
-			self.check_bkgmap = __generate_bkg_map(self.check_data, self.ntiles, self.tilesizex, self.tilesizey)
+			self.check_bkgmap = self.__generate_bkg_map(self.check_data, self.ntiles, 
+													self.tilesizex, self.tilesizey)
 			self.check_data = self.check_data - self.check_bkgmap
 		if self.normalise:
 			self.check_data = self.check_data /self.texp
@@ -206,11 +215,21 @@ class Donuts(object):
 		print("Y: {0:.2f}".format(self.solution_n_y))
 		return self.solution_n_x,self.solution_n_y
 
-# planned usage
-d = Donuts(refimage='filename.fits', image_ext=0, exposure='EXPTIME', 
-			normalise=True, subtract_bkg=True, boarder=64, ntiles=32)
-d.print_summary()
-# assumes all the settings from the ref image generation
-x, y = d.measure_shift(checkimage='filename.fits')
+def test_shifts():
+	# initialise the class with the settings needed
+	# upon generation of the reference image
+	d = Donuts(refimage = 'IMAGE80520160114005507.fits', image_ext = 0, exposure = 'EXPOSURE', 
+			normalise = True, subtract_bkg = True, prescan_width = 20, overscan_width = 20, boarder = 64, ntiles = 32)
+	# print a summary of the setup
+	d.print_summary()
+	# assumes all the settings from the ref image generation
+	# and calculates the shift between the images
+	imlist=['IMAGE80520160114005520.fits','IMAGE80520160114005533.fits']
+	for image in imlist:
+		x, y = d.measure_shift(checkimage=image)
+
+if __name__ == '__main__':
+	test_shifts()
+
 
 
