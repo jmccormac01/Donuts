@@ -1,9 +1,14 @@
-## Donuts
-[<img src="https://travis-ci.org/jmccormac01/Donuts.svg?branch=master">](https://travis-ci.org/jmccormac01/Donuts.svg?branch=master)
+=======
+Donuts
+=======
+
+.. image:: https://travis-ci.org/jmccormac01/Donuts.svg?branch=master
+	:target: https://pypi.python.org/pypi/donuts
 
 A science frame autoguiding and image alignment algorithm with sub-pixel precision, capable of guiding on defocused stars. 
 
-## Motivation
+Motivation
+----------
 
 We operate and have access to several telescopes (NGTS, NITES, Warwick 1m, 1.5m San Pedro Martir) that require precise autoguiding. Sometimes we must defocus the telescope for various reasons, but we'd still like to autoguide. Donuts was designed to allow this. It had to be simple, fast and accurate. It works well as an autoguiding algorithm for equatorial telescopes (no field rotation). 
 
@@ -13,34 +18,21 @@ The algorithm has its limitations. It currently does not deal with rotation and 
 
 http://adsabs.harvard.edu/abs/2013PASP..125..548M
 
-## Code Example
+Installation
+------------
 
+This package is currently pre-alpha and does not build correctly yet. 
  
-## Installation
 
-This package will hopefully be an Astropy affiliated package when I am done
+Contributors
+------------
 
-## API Reference
-
-Documentation will be done with Sphinx - not complete yet.
-
-## Tests
-
-There is currently a very simple test built into main. This takes three images and measures the shift between them, using the first as the reference. The expected results are:
-
-|        *Image ID*           | X shift (pix) |  Y shift (pix) |
-| --------------------------- | ------------- | -------------- |
-| IMAGE80520160114005520.fits |    -0.09      |      0.24      |
-| IMAGE80520160114005533.fits |     0.01      |      0.14      |
-
-The corrections, are those required to adjust the stars back to their location in the reference image.
-
-## Contributors
-
-[@jmccormac01](https://github.com/jmccormac01) & [@mindriot101](https://github.com/mindriot101)
+[@jmccormac01]/(https://github.com/jmccormac01) 
+[@mindriot101](https://github.com/mindriot101)
 
 
-## License
+License
+-------
 
 MIT License
 
