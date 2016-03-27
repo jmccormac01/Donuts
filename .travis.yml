@@ -21,6 +21,10 @@ addons:
             - texlive-latex-extra
             - dvipng
 
+notifications:
+    email:
+     - jmccormac001@gmail.com
+
 env:
     global:
         # The following versions are the 'default' for tests, unless
