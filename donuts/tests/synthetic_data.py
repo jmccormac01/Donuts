@@ -17,7 +17,10 @@ def generate_signals(shape, positions):
     out = np.zeros(shape)
     for position in positions:
         x, y = position
-        out[y, x] = 1.
+        try:
+            out[y, x] = 1.
+        except IndexError:
+            pass
     return out
 
 

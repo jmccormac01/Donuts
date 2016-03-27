@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 from .synthetic_data import (generate_synthetic_data,
                              generate_background,
@@ -9,7 +10,7 @@ np.random.seed(42)
 
 
 def test_generate_shape():
-    data = generate_synthetic_data(positions=[], shape=(10, 10))
+    data = generate_synthetic_data(positions=[(5, 5)], shape=(10, 10))
     assert data.shape == (10, 10)
 
 
@@ -80,3 +81,9 @@ def test_no_stars_raises_error():
         data = generate_synthetic_data(positions)
 
     assert 'no stars' in str(err).lower()
+
+
+def test_stars_outside_image_are_ignored():
+    positions = [(2048, 2048)]
+    signals = generate_signals((10, 10), positions)
+    assert np.allclose(signals, 0.)
