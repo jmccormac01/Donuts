@@ -37,6 +37,8 @@ def generate_synthetic_data(
         background_level=background_level,
         background_sigma=background_sigma)
     deltas = generate_signals(shape=shape, positions=positions)
+    if np.allclose(deltas, 0.):
+        raise ValueError("No stars found in the synthetic image")
     blurred = gaussian_filter(deltas, sigma=2.35 * psf_pix)
     blurred_max = blurred.max()
     blurred_scaled = blurred * peak_height / blurred_max

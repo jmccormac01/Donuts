@@ -72,3 +72,11 @@ def test_write_file(tmpdir):
         peak_height=peak_height,
     )
     assert fname.isfile()
+
+
+def test_no_stars_raises_error():
+    positions = []
+    with pytest.raises(ValueError) as err:
+        data = generate_synthetic_data(positions)
+
+    assert 'no stars' in str(err).lower()
