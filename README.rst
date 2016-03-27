@@ -27,8 +27,11 @@ This package is currently pre-alpha and does not build correctly yet.
 Contributors
 ------------
 
-[@jmccormac01]/(https://github.com/jmccormac01) 
-[@mindriot101](https://github.com/mindriot101)
+jmccormac01_.
+.. _jmccormac01: https://github.com/jmccormac01
+ 
+mindriot101_.
+.. _mindriot101: https://github.com/mindriot101
 
 
 License
