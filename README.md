@@ -1,5 +1,5 @@
 ## Donuts
-https://travis-ci.org/jmccormac01/Donuts.svg?branch=master
+[https://travis-ci.org/jmccormac01/Donuts.svg?branch=master]()
 
 A science frame autoguiding and image alignment algorithm with sub-pixel precision, capable of guiding on defocused stars. 
 
