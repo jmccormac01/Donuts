@@ -1,4 +1,5 @@
 import numpy as np
+from astropy.io import fits
 from scipy.ndimage import gaussian_filter
 
 
@@ -40,3 +41,9 @@ def generate_synthetic_data(
     blurred_max = blurred.max()
     blurred_scaled = blurred * peak_height / blurred_max
     return background + blurred_scaled
+
+
+def save_synthetic_data(filename, *args, **kwargs):
+    data = generate_synthetic_data(*args, **kwargs)
+    phdu = fits.PrimaryHDU(data)
+    phdu.writeto(filename, clobber=True)

@@ -2,6 +2,7 @@ import numpy as np
 from .synthetic_data import (generate_synthetic_data,
                              generate_background,
                              generate_signals,
+                             save_synthetic_data,
                             )
 
 np.random.seed(42)
@@ -57,3 +58,17 @@ def test_generate_synthetic_data():
         assert np.isclose(data[position], peak_height, rtol=0.8)
 
     assert 20. < data[0, 0] < 150
+
+
+def test_write_file(tmpdir):
+    fname = tmpdir.join('out.fits')
+    positions = [(50, 50)]
+    peak_height = 1000.
+    save_synthetic_data(str(fname),
+        shape=(1024, 1024),
+        background_level=100,
+        background_sigma=10,
+        positions=positions,
+        peak_height=peak_height,
+    )
+    assert fname.isfile()
