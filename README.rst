@@ -4,6 +4,9 @@ Donuts
 
 .. image:: https://travis-ci.org/jmccormac01/Donuts.svg?branch=master
     :target: https://travis-ci.org/jmccormac01/Donuts
+.. image:: https://landscape.io/github/jmccormac01/Donuts/master/landscape.svg?style=flat
+   :target: https://landscape.io/github/jmccormac01/Donuts/master
+   :alt: Code Health
 
 A science frame autoguiding and image alignment algorithm with sub-pixel precision, capable of guiding on defocused stars. 
 
@@ -21,7 +24,7 @@ http://adsabs.harvard.edu/abs/2013PASP..125..548M
 Installation
 ------------
 
-This package is currently pre-alpha and does not build correctly yet. 
+This package is currently pre-alpha. We don't recommend using it just yet :)
  
 
 Contributors
