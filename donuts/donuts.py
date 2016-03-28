@@ -1,4 +1,4 @@
-"""A module containing the Donuts class, used for measuring 
+"""A module containing the Donuts class, used for measuring
 shifts between images in CCD data.
 """
 from __future__ import print_function, division

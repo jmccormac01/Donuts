@@ -1,3 +1,4 @@
+'''Test to run synthetic data through Donuts'''
 import pytest
 import numpy as np
 from .synthetic_data import (generate_synthetic_data,
@@ -8,13 +9,15 @@ from .synthetic_data import (generate_synthetic_data,
 
 np.random.seed(42)
 
-
 def test_generate_shape():
+    '''Generate test shape
+    '''
     data = generate_synthetic_data(positions=[(5, 5)], shape=(10, 10))
     assert data.shape == (10, 10)
 
-
 def test_background_level():
+    '''Test the sky background level
+    '''
     background_level = 100
     background_sigma = 0.01
     data = generate_background(
@@ -29,6 +32,8 @@ def test_background_level():
 
 
 def test_generate_deltas():
+    '''Test generation of star positions
+    '''
     positions = [(4, 4)]
     data = generate_signals(positions=positions, shape=(10, 10))
     assert data[positions[0]] > 0.
@@ -37,6 +42,8 @@ def test_generate_deltas():
 
 
 def test_generate_multiple_deltas():
+    '''Test generation of multiples
+    '''
     positions = [(4, 4), (8, 8), (5, 5)]
     data = generate_signals(positions=positions, shape=(10, 10))
     assert data[0, 0] == 0.
@@ -46,6 +53,8 @@ def test_generate_multiple_deltas():
 
 
 def test_generate_synthetic_data():
+    '''Test generation of synthetic data set
+    '''
     positions = [(50, 50)]
     peak_height = 1000.
     data = generate_synthetic_data(
@@ -62,10 +71,13 @@ def test_generate_synthetic_data():
 
 
 def test_write_file(tmpdir):
+    '''Test outputing of fits file
+    '''
     fname = tmpdir.join('out.fits')
     positions = [(50, 50)]
     peak_height = 1000.
-    save_synthetic_data(str(fname),
+    save_synthetic_data(
+        str(fname),
         shape=(1024, 1024),
         background_level=100,
         background_sigma=10,
@@ -76,6 +88,8 @@ def test_write_file(tmpdir):
 
 
 def test_no_stars_raises_error():
+    '''Test that if no stars, we get an error
+    '''
     positions = []
     with pytest.raises(ValueError) as err:
         data = generate_synthetic_data(positions)
@@ -84,6 +98,8 @@ def test_no_stars_raises_error():
 
 
 def test_stars_outside_image_are_ignored():
+    '''Test stars outside the image are ignored
+    '''
     positions = [(2048, 2048)]
     signals = generate_signals((10, 10), positions)
     assert np.allclose(signals, 0.)
