@@ -78,6 +78,9 @@ before_install:
     # - export DISPLAY=:99.0
     # - sh -e /etc/init.d/xvfb start
 
+    # python3.5 needs a later version of pytest
+    - pip install pytest>=2.7.3 --upgrade
+
 install:
 
     # We now use the ci-helpers package to set up our testing environment.
@@ -103,8 +106,6 @@ install:
     # section if they are needed before setting up conda) to install any
     # other dependencies.
     
-    # python3.5 needs a later version of pytest
-    - pip install pytest>=2.7.3 --upgrade
 
 script:
    - python setup.py $SETUP_CMD
