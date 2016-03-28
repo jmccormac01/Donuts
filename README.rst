@@ -7,6 +7,8 @@ Donuts
 .. image:: https://landscape.io/github/jmccormac01/Donuts/master/landscape.svg?style=flat
    :target: https://landscape.io/github/jmccormac01/Donuts/master
    :alt: Code Health
+.. image:: https://coveralls.io/repos/github/jmccormac01/Donuts/badge.svg?branch=master 
+   :target: https://coveralls.io/github/jmccormac01/Donuts?branch=master
 
 A science frame autoguiding and image alignment algorithm with sub-pixel precision, capable of guiding on defocused stars. 
 
