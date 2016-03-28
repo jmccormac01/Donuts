@@ -3,7 +3,7 @@ Donuts
 =======
 
 .. image:: https://travis-ci.org/jmccormac01/Donuts.svg?branch=master
-	:target: https://pypi.python.org/pypi/donuts
+    :target: https://travis-ci.org/jmccormac01/Donuts
 
 A science frame autoguiding and image alignment algorithm with sub-pixel precision, capable of guiding on defocused stars. 
 
