@@ -1,3 +1,4 @@
+'''Test to run Donuts on synthetic data'''
 import pytest
 import numpy as np
 from astropy.io import fits
@@ -12,8 +13,24 @@ np.random.seed(42)
 OVERSCAN_WIDTH = 20
 PRESCAN_WIDTH = 20
 
-
 def write_data(filename, data):
+    '''Write data to a fits file
+
+    Parameters
+    ----------
+    filename : str
+        Name of output file
+    data : array-like
+        Data to output
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    None
+    '''
     full_array = np.zeros((data.shape[0], data.shape[1] + OVERSCAN_WIDTH + PRESCAN_WIDTH))
     full_array[:, PRESCAN_WIDTH:-OVERSCAN_WIDTH] = data
 
@@ -23,6 +40,28 @@ def write_data(filename, data):
 
 
 def shift_positions(positions, dx=0, dy=0):
+    '''Generate a list of shifted positions for Donuts to recover
+    
+    Parameters
+    ---------
+    positions : array-like
+        list of X and Y positions to shift
+    dx : float
+        size of shift in X direction in pixels.
+        Default is 0.
+    dy : float
+        size of shift in Y direction in pixels.
+        Default is 0.
+
+    Returns
+    -------
+    out : array-like
+        list of shifted X & Y positions
+
+    Raises
+    ------
+    None
+    '''
     out = []
     for x, y in positions:
         out.append((x + dx, y + dy))
@@ -30,14 +69,27 @@ def shift_positions(positions, dx=0, dy=0):
 
 
 def test_same_image_gives_0_offsets(tmpdir):
+    '''Test to see if running Donuts on the same image returns 0.
+
+    Parameters
+    ----------
+    tmpdir : str
+        Path to temporary location for test
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    None
+    '''
     refimage = tmpdir.join('refimage.fits')
     scienceimage = tmpdir.join('scienceimage.fits')
 
     nstars = 500
-    positions = [row for row in zip(
-        np.random.uniform(0, 1023, nstars),
-        np.random.uniform(0, 1023, nstars))
-    ]
+    positions = [row for row in zip(np.random.uniform(0, 1023, nstars),
+                                    np.random.uniform(0, 1023, nstars))]
 
     data = generate_synthetic_data(positions)
     write_data(str(refimage), data)
@@ -57,14 +109,23 @@ def test_same_image_gives_0_offsets(tmpdir):
     (2., 2.),
 ])
 def test_known_offset(dx, dy, tmpdir):
+    '''Test to check Donuts recovers a known offset
+    
+    Parameters
+    ----------
+    dx : float
+        Shift in pixels in X direction
+    dy : float
+        Shift in pixels in Y direction
+    tmpdir : str
+        Path to temporary location for test
+    '''
     refimage = tmpdir.join('refimage.fits')
     scienceimage = tmpdir.join('scienceimage.fits')
 
     nstars = 1500
-    refimage_positions = [row for row in zip(
-        np.random.uniform(0, 1023, nstars),
-        np.random.uniform(0, 1023, nstars))
-    ]
+    refimage_positions = [row for row in zip(np.random.uniform(0, 1023, nstars),
+                                             np.random.uniform(0, 1023, nstars))]
     science_image_positions = shift_positions(
         refimage_positions, dx=dx, dy=dy
     )

@@ -1,7 +1,7 @@
+'''Synthetic data test suite'''
 import numpy as np
 from astropy.io import fits
 from scipy.ndimage import gaussian_filter
-
 
 def generate_background(shape, background_level, background_sigma):
     '''
@@ -25,12 +25,12 @@ def generate_signals(shape, positions):
 
 
 def generate_synthetic_data(
-    positions,
-    shape=(1024, 1024),
-    background_level=100,
-    background_sigma=5,
-    peak_height=1000.,
-    psf_pix=1.6,
+        positions,
+        shape=(1024, 1024),
+        background_level=100,
+        background_sigma=5,
+        peak_height=1000.,
+        psf_pix=1.6,
 ):
     '''
     Generates synthetic data, consisting of a flat gaussian background, with Gaussians for stars.
@@ -49,6 +49,7 @@ def generate_synthetic_data(
 
 
 def save_synthetic_data(filename, *args, **kwargs):
+    '''Save the synthetic data to file '''
     data = generate_synthetic_data(*args, **kwargs)
     phdu = fits.PrimaryHDU(data)
     phdu.writeto(filename, clobber=True)
