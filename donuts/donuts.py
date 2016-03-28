@@ -89,8 +89,8 @@ class Donuts(object):
 
         # check if the CCD is a funny shape. Normal CCDs should divide by 16 with
         # no remainder. NITES for example does not (1030,1057) instead of (1024,1024)
-        numx, rx = divmod(self.dx, 16)
-        numy, ry = divmod(self.dy, 16)
+        _numx, rx = divmod(self.dx, 16)
+        _numy, ry = divmod(self.dy, 16)
         if rx != 0 or ry != 0:
             self.dimx = int((self.dx / self.base) * self.base)
             self.dimy = int((self.dy / self.base) * self.base)
