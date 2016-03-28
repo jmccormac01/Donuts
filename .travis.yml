@@ -24,6 +24,7 @@ addons:
 notifications:
     email:
      - jmccormac001@gmail.com
+     - s.r.walker101@googlemail.com
 
 env:
     global:
