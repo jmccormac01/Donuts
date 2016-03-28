@@ -1,0 +1,9 @@
+ignore-paths:
+  - docs
+  - ez_setup.py
+  - donuts/_astropy_init.py
+  - ah_bootstrap.py
+  - donuts/conftest.py
+python-targets:
+  - 2
+  - 3
