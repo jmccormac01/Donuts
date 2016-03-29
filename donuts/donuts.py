@@ -1,6 +1,6 @@
-"""A module containing the Donuts class, used for measuring
+'''A module containing the Donuts class, used for measuring
 shifts between images in CCD data.
-"""
+'''
 from __future__ import print_function, division
 import numpy as np
 from astropy.io import fits
@@ -13,21 +13,19 @@ from scipy import polyfit
 # to do:
 #   add try/except for opening images etc
 #   set flag when reference image is made, do not run check if no reference
-#   write tests
-#
 
 class Donuts(object):
-    """See method docstrings for descriptions
+    '''See method docstrings for descriptions
 
     Attributes
     ----------
     None
-    """
+    '''
 
     def __init__(self, refimage, image_ext=0, exposure='EXPTIME',
                  normalise=True, subtract_bkg=True, prescan_width=0,
                  overscan_width=0, boarder=64, ntiles=32):
-        """Initialise and generate a reference image.
+        '''Initialise and generate a reference image.
         This reference image is used for measuring frame to frame offsets.
 
         Parameters
@@ -60,7 +58,7 @@ class Donuts(object):
         Raises
         ------
         None
-        """
+        '''
         self.image_ext = image_ext
         self.ntiles = ntiles
         self.normalise = normalise
@@ -69,8 +67,8 @@ class Donuts(object):
         self.prescan_width = prescan_width
         self.overscan_width = overscan_width
         self.boarder = boarder
-        self.solution_n_x = 0.0
-        self.solution_n_y = 0.0
+        self.solution_x = 0.0
+        self.solution_y = 0.0
         self.base = 512
 
         # define here first or pylint cries
@@ -124,7 +122,7 @@ class Donuts(object):
         self.y = np.linspace(0, self.ref_data.shape[0], self.ref_data.shape[0])
 
     def __generate_bkg_map(self, data, tile_num, tilesizex, tilesizey):
-        """Create a background map.
+        '''Create a background map.
         This map may be subtracted from each image before doing the cross correlation
 
         Parameters
@@ -147,7 +145,7 @@ class Donuts(object):
         Raises
         ------
         None
-        """
+        '''
         # create coarse map
         coarse = np.empty((tile_num, tile_num))
         for i in range(0, tile_num):
@@ -158,8 +156,128 @@ class Donuts(object):
         bkgmap = ndimage.zoom(coarse, (tilesizey, tilesizex), order=2)
         return bkgmap
 
+    def __get_check_data(self, checkimage):
+        '''Grab the check_data array
+        This is done using the same settings as the reference image
+
+        Parameters
+        ----------
+        checkimage : str
+            Image filename to compare to reference image
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        None
+        '''
+        self.checkimage = checkimage
+        h = fits.open(self.checkimage)
+        self.check_image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
+        self.check_data = self.check_image_section[self.boarder:self.dimy - self.boarder,
+                                                   self.boarder:self.dimx - self.boarder]
+        # adjust image if requested - same as reference
+        if self.subtract_bkg:
+            self.check_bkgmap = self.__generate_bkg_map(self.check_data, self.ntiles,
+                                                        self.tilesizex, self.tilesizey)
+            self.check_data = self.check_data - self.check_bkgmap
+        if self.normalise:
+            self.check_data = self.check_data / self.texp
+
+    def __cross_correlate(self):
+        '''Cross correlate the reference & check images
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        None
+
+        '''
+        self.check_xproj = np.sum(self.check_data, axis=0)
+        self.check_yproj = np.sum(self.check_data, axis=1)
+        # FFT of the projection spectra
+        f_ref_xproj = fft(self.ref_xproj)
+        f_ref_yproj = fft(self.ref_yproj)
+        f_check_xproj = fft(self.check_xproj)
+        f_check_yproj = fft(self.check_yproj)
+        # cross correlate in and look for the maximium correlation
+        f_ref_xproj_conj = conjugate(f_ref_xproj)
+        f_ref_yproj_conj = conjugate(f_ref_yproj)
+        complex_sum_x = f_ref_xproj_conj * f_check_xproj
+        complex_sum_y = f_ref_yproj_conj * f_check_yproj
+        phi_ref_check_m_x = ifft(complex_sum_x)
+        phi_ref_check_m_y = ifft(complex_sum_y)
+        z_x = max(phi_ref_check_m_x)
+        z_pos_x = np.where(phi_ref_check_m_x == z_x)
+        z_y = max(phi_ref_check_m_y)
+        z_pos_y = np.where(phi_ref_check_m_y == z_y)
+        return z_pos_x, z_pos_y, phi_ref_check_m_x, phi_ref_check_m_y
+    
+    def __find_solution(self, z_pos, phi_ref_check_m):
+        '''Covert the CCF into a shift solution for individual axes
+        The location of the peak in the CCF is converted to a shift
+        in pixels here. Sub pixel resolution is achieved by solving a
+        quadratic for the minimum, using the three pixels around the peak.
+
+        Parameters
+        ----------
+        z_pos : int
+            The location of the peak in the CCF
+        phi_ref_check_m: array-like
+            The CCF array from which to extract a correction
+
+        Returns
+        -------
+        solution : float
+            The shift in pixels between two images along the 
+            given axis
+
+        Raises
+        ------
+        None
+        '''
+        tst = np.empty(3)
+        if z_pos[0][0] <= len(phi_ref_check_m) / 2:
+            lra = [z_pos[0][0] - 1, z_pos[0][0], z_pos[0][0] + 1]
+            tst[0] = phi_ref_check_m[lra[0]].real
+            tst[1] = phi_ref_check_m[lra[1]].real
+            tst[2] = phi_ref_check_m[lra[2]].real
+            coeffs = polyfit(lra, tst, 2)
+            solution = -(-coeffs[1] / (2 * coeffs[0]))
+        elif z_pos[0][0] > len(phi_ref_check_m) / 2 and z_pos[0][0] != len(phi_ref_check_m) - 1:
+            lra = [z_pos[0][0] - 1, z_pos[0][0], z_pos[0][0] + 1]
+            tst[0] = phi_ref_check_m[lra[0]].real
+            tst[1] = phi_ref_check_m[lra[1]].real
+            tst[2] = phi_ref_check_m[lra[2]].real
+            coeffs = polyfit(lra, tst, 2)
+            solution = len(phi_ref_check_m) + (coeffs[1] / (2 * coeffs[0]))
+        elif z_pos[0][0] == len(phi_ref_check_m) - 1:
+            lra = [-1, 0, 1]
+            tst[0] = phi_ref_check_m[-2].real
+            tst[1] = phi_ref_check_m[-1].real
+            tst[2] = phi_ref_check_m[0].real
+            coeffs = polyfit(lra, tst, 2)
+            solution = 1 + (coeffs[1] / (2 * coeffs[0]))
+        else: #if z_pos[0][0] == 0:
+            lra = [1, 0, -1]
+            tst[0] = phi_ref_check_m[-1].real
+            tst[1] = phi_ref_check_m[0].real
+            tst[2] = phi_ref_check_m[1].real
+            coeffs = polyfit(lra, tst, 2)
+            solution = -coeffs[1] / (2 * coeffs[0])
+        return solution
+
     def print_summary(self):
-        """Print a summary of the current settings
+        '''Print a summary of the current settings
 
         Parameters
         ----------
@@ -172,7 +290,7 @@ class Donuts(object):
         Raises
         ------
         None
-        """
+        '''
         print('Data Summary:')
         print('\tIlluminated array size: {0:d} x {1:d} pixels'.format(self.dx, self.dy))
         print('\tExcluding a boarder of {0:d} pixels'.format(self.boarder))
@@ -184,7 +302,7 @@ class Donuts(object):
             print('\tEach {0:d} x {1:d} pixels'.format(self.tilesizex, self.tilesizey))
 
     def measure_shift(self, checkimage):
-        """Generate a check image and measure its offset from the reference
+        '''Generate a check image and measure its offset from the reference
         This is done using the same settings as the reference image.
 
         Parameters
@@ -202,103 +320,11 @@ class Donuts(object):
         Raises
         ------
         None
-        """
-        self.checkimage = checkimage
-        h = fits.open(self.checkimage)
-        self.check_image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
-        self.check_data = self.check_image_section[self.boarder:self.dimy - self.boarder,
-                                                   self.boarder:self.dimx - self.boarder]
-
-        # adjust image if requested - same as reference
-        if self.subtract_bkg:
-            self.check_bkgmap = self.__generate_bkg_map(self.check_data, self.ntiles,
-                                                        self.tilesizex, self.tilesizey)
-            self.check_data = self.check_data - self.check_bkgmap
-        if self.normalise:
-            self.check_data = self.check_data / self.texp
-        self.check_xproj = np.sum(self.check_data, axis=0)
-        self.check_yproj = np.sum(self.check_data, axis=1)
-        # FFT of the projection spectra
-        f_ref_xproj_n = fft(self.ref_xproj)
-        f_ref_yproj_n = fft(self.ref_yproj)
-        f_check_xproj_n = fft(self.check_xproj)
-        f_check_yproj_n = fft(self.check_yproj)
-        # cross correlate in and look for the maximium correlation
-        f_ref_xproj_conj_n = conjugate(f_ref_xproj_n)
-        f_ref_yproj_conj_n = conjugate(f_ref_yproj_n)
-        complex_sum_x_n = f_ref_xproj_conj_n * f_check_xproj_n
-        complex_sum_y_n = f_ref_yproj_conj_n * f_check_yproj_n
-        phi_ref_check_m_x_n = ifft(complex_sum_x_n)
-        phi_ref_check_m_y_n = ifft(complex_sum_y_n)
-        z_x_n = max(phi_ref_check_m_x_n)
-        z_pos_x_n = np.where(phi_ref_check_m_x_n == z_x_n)
-        z_y_n = max(phi_ref_check_m_y_n)
-        z_pos_y_n = np.where(phi_ref_check_m_y_n == z_y_n)
-        # turn the location of the maximum into shift in pixels
-        # quadratically interpolate over the 3 pixels surrounding
-        # the peak in the CCF. This gives sub pixel resolution.
-        tst_y = np.empty(3)
-        tst_x = np.empty(3)
-        # X
-        if z_pos_x_n[0][0] <= len(phi_ref_check_m_x_n) / 2:
-            lra_x = [z_pos_x_n[0][0] - 1, z_pos_x_n[0][0], z_pos_x_n[0][0] + 1]
-            tst_x[0] = phi_ref_check_m_x_n[lra_x[0]].real
-            tst_x[1] = phi_ref_check_m_x_n[lra_x[1]].real
-            tst_x[2] = phi_ref_check_m_x_n[lra_x[2]].real
-            coeffs_n_x = polyfit(lra_x, tst_x, 2)
-            self.solution_n_x = -(-coeffs_n_x[1] / (2 * coeffs_n_x[0]))
-        elif z_pos_x_n[0][0] > len(phi_ref_check_m_x_n) / 2 and z_pos_x_n[0][0] != len(phi_ref_check_m_x_n) - 1:
-            lra_x = [z_pos_x_n[0][0] - 1, z_pos_x_n[0][0], z_pos_x_n[0][0] + 1]
-            tst_x[0] = phi_ref_check_m_x_n[lra_x[0]].real
-            tst_x[1] = phi_ref_check_m_x_n[lra_x[1]].real
-            tst_x[2] = phi_ref_check_m_x_n[lra_x[2]].real
-            coeffs_n_x = polyfit(lra_x, tst_x, 2)
-            self.solution_n_x = len(phi_ref_check_m_x_n) + (coeffs_n_x[1] / (2 * coeffs_n_x[0]))
-        elif z_pos_x_n[0][0] == len(phi_ref_check_m_x_n) - 1:
-            lra_x = [-1, 0, 1]
-            tst_x[0] = phi_ref_check_m_x_n[-2].real
-            tst_x[1] = phi_ref_check_m_x_n[-1].real
-            tst_x[2] = phi_ref_check_m_x_n[0].real
-            coeffs_n_x = polyfit(lra_x, tst_x, 2)
-            self.solution_n_x = 1 + (coeffs_n_x[1] / (2 * coeffs_n_x[0]))
-        else: #if z_pos_x_n[0][0] == 0:
-            lra_x = [1, 0, -1]
-            tst_x[0] = phi_ref_check_m_x_n[-1].real
-            tst_x[1] = phi_ref_check_m_x_n[0].real
-            tst_x[2] = phi_ref_check_m_x_n[1].real
-            coeffs_n_x = polyfit(lra_x, tst_x, 2)
-            self.solution_n_x = -coeffs_n_x[1] / (2 * coeffs_n_x[0])
-        print("X: {0:.2f}".format(self.solution_n_x))
-        # Y
-        if z_pos_y_n[0][0] <= len(phi_ref_check_m_y_n)/2:
-            lra_y = [z_pos_y_n[0][0] - 1, z_pos_y_n[0][0], z_pos_y_n[0][0] + 1]
-            tst_y[0] = phi_ref_check_m_y_n[lra_y[0]].real
-            tst_y[1] = phi_ref_check_m_y_n[lra_y[1]].real
-            tst_y[2] = phi_ref_check_m_y_n[lra_y[2]].real
-            coeffs_n_y = polyfit(lra_y, tst_y, 2)
-            self.solution_n_y = -(-coeffs_n_y[1]/(2*coeffs_n_y[0]))
-        if z_pos_y_n[0][0] > len(phi_ref_check_m_y_n) / 2 and z_pos_y_n[0][0] != len(phi_ref_check_m_y_n) - 1:
-            lra_y = [z_pos_y_n[0][0]-1, z_pos_y_n[0][0], z_pos_y_n[0][0]+1]
-            tst_y[0] = phi_ref_check_m_y_n[lra_y[0]].real
-            tst_y[1] = phi_ref_check_m_y_n[lra_y[1]].real
-            tst_y[2] = phi_ref_check_m_y_n[lra_y[2]].real
-            coeffs_n_y = polyfit(lra_y, tst_y, 2)
-            self.solution_n_y = len(phi_ref_check_m_y_n) + (coeffs_n_y[1] / (2 * coeffs_n_y[0]))
-        if z_pos_y_n[0][0] == len(phi_ref_check_m_y_n) - 1:
-            lra_y = [-1, 0, 1]
-            tst_y[0] = phi_ref_check_m_y_n[-2].real
-            tst_y[1] = phi_ref_check_m_y_n[-1].real
-            tst_y[2] = phi_ref_check_m_y_n[0].real
-            coeffs_n_y = polyfit(lra_y, tst_y, 2)
-            self.solution_n_y = 1 + (coeffs_n_y[1] / (2 * coeffs_n_y[0]))
-        else: #if z_pos_y_n[0][0] == 0:
-            lra_y = [1, 0, -1]
-            tst_y[0] = phi_ref_check_m_y_n[-1].real
-            tst_y[1] = phi_ref_check_m_y_n[0].real
-            tst_y[2] = phi_ref_check_m_y_n[1].real
-            coeffs_n_y = polyfit(lra_y, tst_y, 2)
-            self.solution_n_y = -coeffs_n_y[1] / (2 * coeffs_n_y[0])
-        print("Y: {0:.2f}".format(self.solution_n_y))
-        return self.solution_n_x, self.solution_n_y
-
-
+        '''
+        self.__get_check_data(checkimage)
+        z_pos_x, z_pos_y, phi_ref_check_m_x, phi_ref_check_m_y = self.__cross_correlate()
+        self.solution_x = self.__find_solution(z_pos_x, phi_ref_check_m_x)
+        self.solution_y = self.__find_solution(z_pos_y, phi_ref_check_m_y)
+        print("X: {0:.2f}".format(self.solution_x))
+        print("Y: {0:.2f}".format(self.solution_y))
+        return self.solution_x, self.solution_y
