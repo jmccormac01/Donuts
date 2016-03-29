@@ -21,9 +21,19 @@ We operate and have access to several telescopes (NGTS, NITES, Warwick 1m, 1.5m 
 
 The process for aligning apertures for photometry is essentially the reverse. Rather than correcting the telescope pointing, the apertures must track the drift of the stars. Donuts can therefore be used to track the stellar positions for CCD photometry also. 
 
+By default Donuts measures frame-to-frame translational offsets (X and Y) using all the stars in the image. This can be adjusted in the settings to select a specific region of interest (for extremly wide or distorted fields). 
+
 The algorithm has its limitations. It currently does not deal with rotation and large drifts, where the field moves by approx. half a FOV or more. Our paper describing the details can be found here:
 
 http://adsabs.harvard.edu/abs/2013PASP..125..548M
+
+Example
+-------
+
+Below is an sample of 10 nights autoguiding residuals from NGTS while using Donuts. The upper plot shows the frame to frame error, while the bottom shows the drift which would have occured, if not for Donuts. Aligning photometry apertures is essentially the same process and similar performance is expected under that scenario. We routinely achieve an autoguiding RMS 1/20 pixels with NGTS. 
+
+.. image:: AgResiduals_802_March2016.png
+
 
 Installation
 ------------
