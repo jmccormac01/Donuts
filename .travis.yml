@@ -24,6 +24,12 @@ notifications:
     email:
      - jmccormac001@gmail.com
      - s.r.walker101@googlemail.com
+    webhooks:
+      urls:
+        - https://webhooks.gitter.im/e/0af4ef0676d0344bd2dc
+      on_success: always
+      on_failure: always
+      on_start: always
 
 env:
     global:
