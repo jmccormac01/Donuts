@@ -101,44 +101,9 @@ def test_same_image_gives_0_offsets(tmpdir):
     x, y = d.measure_shift(str(scienceimage))
     assert np.isclose(x, 0.) and np.isclose(y, 0.)
 
-def test_same_odd_image_gives_0_offsets(tmpdir):
-    '''Test to see if running Donuts on the same odd image returns 0.
-    Same as test above but forces the odd CCD shape correction to
-    kick in.
-
-    Parameters
-    ----------
-    tmpdir : str
-        Path to temporary location for test
-
-    Returns
-    -------
-    None
-
-    Raises
-    ------
-    None
-    '''
-    refimage = tmpdir.join('refimage.fits')
-    scienceimage = tmpdir.join('scienceimage.fits')
-
-    nstars = 500
-    positions = [row for row in zip(np.random.uniform(0, 1023, nstars),
-                                    np.random.uniform(0, 1023, nstars))]
-
-    data = generate_synthetic_data(positions,shape=(1053,1030))
-    write_data(str(refimage), data)
-    write_data(str(scienceimage), data)
-
-    d = Donuts(refimage=str(refimage), image_ext=0, exposure='EXPOSURE',
-               normalise=True, subtract_bkg=True, prescan_width=PRESCAN_WIDTH,
-               overscan_width=OVERSCAN_WIDTH, boarder=8, ntiles=16)
-    x, y = d.measure_shift(str(scienceimage))
-    assert np.isclose(x, 0.) and np.isclose(y, 0.)
-
 
 @pytest.mark.parametrize('dx,dy', [
-    (0., 0.),
+    (0.,0.),
     (0., 1.),
     (-1., 1.),
     (-5., -0.2),
