@@ -101,7 +101,7 @@ class Donuts(object):
                                            self.boarder:self.dimx - self.boarder]
 
         # get the working image dimensions after removing the boarder
-        self.w_dimx, self.w_dimy = self.ref_data.shape
+        self.w_dimy, self.w_dimx = self.ref_data.shape
 
         # set up tiles for bkg subtract
         self.tilesizex = self.w_dimx // self.ntiles
