@@ -82,31 +82,29 @@ class Donuts(object):
         h = fits.open(refimage)
         self.texp = float(h[self.image_ext].header[exposure])
         # get image dimmensions
-        self.image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
+        if self.overscan_width != 0:
+            self.image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
+        else:
+            self.image_section = h[self.image_ext].data[:, self.prescan_width:]
         self.dy, self.dx = self.image_section.shape
-
         # check if the CCD is a funny shape. Normal CCDs should divide by 16 with
         # no remainder. NITES for example does not (1030,1057) instead of (1024,1024)
         rx = self.dx % 16
         ry = self.dy % 16
-        if rx != 0 or ry != 0:
-            self.dimx = int((self.dx / self.base) * self.base)
-            self.dimy = int((self.dy / self.base) * self.base)
+        if rx > 0 or ry > 0:
+            self.dimx = int(self.dx // self.base) * self.base
+            self.dimy = int(self.dy // self.base) * self.base
         else:
             self.dimx = self.dx
             self.dimy = self.dy
-
         # get the reference data, with tweaked shape if needed
         self.ref_data = self.image_section[self.boarder:self.dimy - self.boarder,
                                            self.boarder:self.dimx - self.boarder]
-
         # get the working image dimensions after removing the boarder
         self.w_dimy, self.w_dimx = self.ref_data.shape
-
         # set up tiles for bkg subtract
         self.tilesizex = self.w_dimx // self.ntiles
         self.tilesizey = self.w_dimy // self.ntiles
-
         # adjust image if requested
         if self.subtract_bkg:
             self.bkgmap = self.__generate_bkg_map(self.ref_data, self.ntiles,
@@ -117,7 +115,6 @@ class Donuts(object):
 
         self.ref_xproj = np.sum(self.ref_data, axis=0)
         self.ref_yproj = np.sum(self.ref_data, axis=1)
-
         self.x = np.linspace(0, self.ref_data.shape[1], self.ref_data.shape[1])
         self.y = np.linspace(0, self.ref_data.shape[0], self.ref_data.shape[0])
 
@@ -175,7 +172,10 @@ class Donuts(object):
         '''
         self.checkimage = checkimage
         h = fits.open(self.checkimage)
-        self.check_image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
+        if self.overscan_width != 0:
+            self.check_image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
+        else:
+            self.check_image_section = h[self.image_ext].data[:, self.prescan_width:]
         self.check_data = self.check_image_section[self.boarder:self.dimy - self.boarder,
                                                    self.boarder:self.dimx - self.boarder]
         # adjust image if requested - same as reference
