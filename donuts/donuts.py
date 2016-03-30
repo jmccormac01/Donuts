@@ -246,7 +246,7 @@ class Donuts(object):
         None
         '''
         tst = np.empty(3)
-        if z_pos[0][0] <= len(phi_ref_check_m) / 2:
+        if z_pos[0][0] <= len(phi_ref_check_m) / 2 and z_pos[0][0] != 0:
             lra = [z_pos[0][0] - 1, z_pos[0][0], z_pos[0][0] + 1]
             tst[0] = phi_ref_check_m[lra[0]].real
             tst[1] = phi_ref_check_m[lra[1]].real
