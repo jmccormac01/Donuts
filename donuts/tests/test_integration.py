@@ -32,7 +32,7 @@ def test_full_integration():
     d.print_summary()
     # assumes all the settings from the ref image generation
     # and calculates the shift between the images
-    imlist = ['IMAGE80520160114005520.fits', 'IMAGE80520160114005533.fits']
+    imlist = ['IMAGE80520160114005507.fits','IMAGE80520160114005520.fits', 'IMAGE80520160114005533.fits']
     for image in imlist:
         test_check_image = os.path.join(DATA_DIR, image)
         x, y = d.measure_shift(checkimage=test_check_image)
