@@ -115,8 +115,6 @@ class Donuts(object):
 
         self.ref_xproj = np.sum(self.ref_data, axis=0)
         self.ref_yproj = np.sum(self.ref_data, axis=1)
-        self.x = np.linspace(0, self.ref_data.shape[1], self.ref_data.shape[1])
-        self.y = np.linspace(0, self.ref_data.shape[0], self.ref_data.shape[0])
 
     def __generate_bkg_map(self, data, tile_num, tilesizex, tilesizey):
         '''Create a background map.
