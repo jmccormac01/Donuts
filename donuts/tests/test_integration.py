@@ -1,6 +1,7 @@
 """Real world test of Donuts using real images from NGTS
 """
 import os.path
+import numpy as np
 from ..donuts import Donuts
 
 ROOT_PATH = os.path.dirname(__file__)
@@ -33,6 +34,10 @@ def test_full_integration():
     # assumes all the settings from the ref image generation
     # and calculates the shift between the images
     imlist = ['IMAGE80520160114005507.fits','IMAGE80520160114005520.fits', 'IMAGE80520160114005533.fits']
-    for image in imlist:
+    x_expected = [0.00, -0.09, 0.01]
+    y_expected = [0.00, 0.24, 0.14]
+    for image, x_ex, y_ex in zip(imlist, x_expected, y_expected):
         test_check_image = os.path.join(DATA_DIR, image)
         x, y = d.measure_shift(checkimage=test_check_image)
+        assert np.isclose(x, x_ex, rtol=0.1, atol=0.1)
+        assert np.isclose(y, y_ex, rtol=0.1, atol=0.1)
