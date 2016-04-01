@@ -97,7 +97,7 @@ def test_same_image_gives_0_offsets(tmpdir):
 
     d = Donuts(refimage=str(refimage), image_ext=0, exposure='EXPOSURE',
                normalise=True, subtract_bkg=True, prescan_width=PRESCAN_WIDTH,
-               overscan_width=OVERSCAN_WIDTH, boarder=8, ntiles=16)
+               overscan_width=OVERSCAN_WIDTH, border=8, ntiles=16)
     x, y = d.measure_shift(str(scienceimage))
     assert np.isclose(x, 0.) and np.isclose(y, 0.)
 
@@ -138,7 +138,7 @@ def test_known_offset(dx, dy, tmpdir):
 
     d = Donuts(refimage=str(refimage), image_ext=0, exposure='EXPOSURE',
                normalise=True, subtract_bkg=True, prescan_width=PRESCAN_WIDTH,
-               overscan_width=OVERSCAN_WIDTH, boarder=8, ntiles=16)
+               overscan_width=OVERSCAN_WIDTH, border=8, ntiles=16)
     x, y = d.measure_shift(str(scienceimage))
 
     # Fairly large margin for the tolerence as the values are relatively uncertain
