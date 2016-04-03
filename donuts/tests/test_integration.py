@@ -41,5 +41,5 @@ def test_full_integration():
     for image, x_ex, y_ex in zip(imlist, x_expected, y_expected):
         test_check_image = os.path.join(DATA_DIR, image)
         x, y = d.measure_shift(checkimage=test_check_image)
-        assert np.isclose(x, x_ex, rtol=0.1, atol=0.1)
-        assert np.isclose(y, y_ex, rtol=0.1, atol=0.1)
+        assert np.isclose(x.value, x_ex, rtol=0.1, atol=0.1)
+        assert np.isclose(y.value, y_ex, rtol=0.1, atol=0.1)
