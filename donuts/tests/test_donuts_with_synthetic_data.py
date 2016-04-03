@@ -99,7 +99,7 @@ def test_same_image_gives_0_offsets(tmpdir):
                normalise=True, subtract_bkg=True, prescan_width=PRESCAN_WIDTH,
                overscan_width=OVERSCAN_WIDTH, border=8, ntiles=16)
     x, y = d.measure_shift(str(scienceimage))
-    assert np.isclose(x, 0.) and np.isclose(y, 0.)
+    assert np.isclose(x.value, 0.) and np.isclose(y.value, 0.)
 
 
 @pytest.mark.parametrize('dx,dy', [
@@ -142,5 +142,5 @@ def test_known_offset(dx, dy, tmpdir):
     x, y = d.measure_shift(str(scienceimage))
 
     # Fairly large margin for the tolerence as the values are relatively uncertain
-    assert np.isclose(x, -dx, rtol=0.5, atol=0.1)
-    assert np.isclose(y, -dy, rtol=0.5, atol=0.1)
+    assert np.isclose(x.value, -dx, rtol=0.5, atol=0.1)
+    assert np.isclose(y.value, -dy, rtol=0.5, atol=0.1)
