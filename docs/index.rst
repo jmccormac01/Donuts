@@ -17,7 +17,6 @@ A science frame autoguiding and image alignment algorithm with sub-pixel precisi
 .. toctree::
     :maxdepth: 2
 
-    donuts/overview.rst
     donuts/install.rst
     donuts/user_guide.rst
     donuts/api.rst
