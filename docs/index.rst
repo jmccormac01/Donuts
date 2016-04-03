@@ -18,6 +18,8 @@ A science frame autoguiding and image alignment algorithm with sub-pixel precisi
     :maxdepth: 2
 
     donuts/install.rst
+    donuts/api.rst
+
 
 Motivation
 ----------
