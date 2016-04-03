@@ -14,6 +14,11 @@ Donuts
 
 A science frame autoguiding and image alignment algorithm with sub-pixel precision, capable of guiding on defocused stars. 
 
+.. toctree::
+    :maxdepth: 2
+
+    donuts/install.rst
+
 Motivation
 ----------
 
