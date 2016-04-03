@@ -32,20 +32,6 @@ The algorithm has its limitations. It currently does not deal with rotation and 
 
 http://adsabs.harvard.edu/abs/2013PASP..125..548M
 
-Example
--------
-
-Below is an sample of 10 nights autoguiding residuals from NGTS while using Donuts. The upper plot shows the frame to frame error, while the bottom shows the drift which would have occured, if not for Donuts. Aligning photometry apertures is essentially the same process and similar performance is expected under that scenario. We routinely achieve an autoguiding RMS 1/20 pixels with NGTS. 
-
-.. image:: AgResiduals_802_March2016.png
-
-
-Installation
-------------
-
-This package is currently pre-alpha. We don't recommend using it just yet :)
- 
-
 Contributors
 ------------
 
