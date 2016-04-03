@@ -193,8 +193,8 @@ class Donuts(object):
                     self.check_image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
                 else:
                     self.check_image_section = h[self.image_ext].data[:, self.prescan_width:]
-                self.check_data = self.check_image_section[self.boarder:self.dimy - self.boarder,
-                                                           self.boarder:self.dimx - self.boarder]
+                self.check_data = self.check_image_section[self.border:self.dimy - self.border,
+                                                           self.border:self.dimx - self.border]
         except IOError:
             log.warn('Failed to find {0:s}'.format(checkimage))
             raise self.CheckImageError
