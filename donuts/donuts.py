@@ -23,14 +23,8 @@ class Donuts(object):
 
     Attributes
     ----------
-    ReferenceImageError : exception
-        Exception to be raised when there is a problem with the reference image
-    CheckImageError : exception
-        Exception to be raised when there is a problem with the check image
+    None
     '''
-
-    ReferenceImageError = Exception('Reference image not found')
-    CheckImageError = Exception('Check image not found')
 
     def __init__(self, refimage, image_ext=0, exposure='EXPTIME',
                  normalise=True, subtract_bkg=True, prescan_width=0,
@@ -80,7 +74,6 @@ class Donuts(object):
         self.solution_x = 0.0
         self.solution_y = 0.0
         self.base = 512
-        self.isRefImage = False
 
         # define here first or pylint cries
         self.checkimage = None
@@ -90,21 +83,16 @@ class Donuts(object):
         self.check_xproj = None
         self.check_yproj = None
 
-        try:
-            with fits.open(refimage) as h:
-                self.texp = float(h[self.image_ext].header[exposure])
-                # get image dimmensions
-                if self.overscan_width != 0:
-                    self.image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
-                else:
-                    self.image_section = h[self.image_ext].data[:, self.prescan_width:]
-                self.dy, self.dx = self.image_section.shape
-                self.isRefImage =  True
-        except IOError:
-            log.warn('Failed to find image {0:s}'.format(refimage))
-            self.isRefImage = False
-            raise self.ReferenceImageError
-
+        with fits.open(refimage) as h:
+            self.texp = float(h[self.image_ext].header[exposure])
+            # get image dimmensions
+            if self.overscan_width != 0:
+                self.image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
+            else:
+                self.image_section = h[self.image_ext].data[:, self.prescan_width:]
+            self.dy, self.dx = self.image_section.shape
+            self.isRefImage =  True
+        
         # check if the CCD is a funny shape. Normal CCDs should divide by 16 with
         # no remainder. NITES for example does not (1030,1057) instead of (1024,1024)
         rx = self.dx % 16
@@ -186,18 +174,14 @@ class Donuts(object):
         ------
         None
         '''
-        try:
-            self.checkimage = checkimage
-            with fits.open(self.checkimage) as h:
-                if self.overscan_width != 0:
-                    self.check_image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
-                else:
-                    self.check_image_section = h[self.image_ext].data[:, self.prescan_width:]
-                self.check_data = self.check_image_section[self.border:self.dimy - self.border,
-                                                           self.border:self.dimx - self.border]
-        except IOError:
-            log.warn('Failed to find {0:s}'.format(checkimage))
-            raise self.CheckImageError
+        self.checkimage = checkimage
+        with fits.open(self.checkimage) as h:
+            if self.overscan_width != 0:
+                self.check_image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
+            else:
+                self.check_image_section = h[self.image_ext].data[:, self.prescan_width:]
+            self.check_data = self.check_image_section[self.border:self.dimy - self.border,
+                                                       self.border:self.dimx - self.border]
         # adjust image if requested - same as reference
         if self.subtract_bkg:
             self.check_bkgmap = self.__generate_bkg_map(self.check_data, self.ntiles,
@@ -341,14 +325,10 @@ class Donuts(object):
         ------
         None
         '''
-        if self.isRefImage:
-            self.__get_check_data(checkimage)
-            z_pos_x, z_pos_y, phi_ref_check_m_x, phi_ref_check_m_y = self.__cross_correlate()
-            self.solution_x = self.__find_solution(z_pos_x, phi_ref_check_m_x)
-            self.solution_y = self.__find_solution(z_pos_y, phi_ref_check_m_y)
-            print("X: {0:.2f}".format(self.solution_x))
-            print("Y: {0:.2f}".format(self.solution_y))
-            return self.solution_x*u.pixel, self.solution_y*u.pixel
-        else:
-            log.warn('No reference image present')
-            raise self.ReferenceImageError
+        self.__get_check_data(checkimage)
+        z_pos_x, z_pos_y, phi_ref_check_m_x, phi_ref_check_m_y = self.__cross_correlate()
+        self.solution_x = self.__find_solution(z_pos_x, phi_ref_check_m_x)
+        self.solution_y = self.__find_solution(z_pos_y, phi_ref_check_m_y)
+        print("X: {0:.2f}".format(self.solution_x))
+        print("Y: {0:.2f}".format(self.solution_y))
+        return self.solution_x*u.pixel, self.solution_y*u.pixel
