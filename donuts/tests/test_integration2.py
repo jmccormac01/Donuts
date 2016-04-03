@@ -26,7 +26,7 @@ def test_full_integration2():
     test_ref_image = os.path.join(DATA_DIR, 'J17490840-001.fit')
     d = Donuts(refimage=test_ref_image, image_ext=0, exposure='EXPTIME',
                normalise=True, subtract_bkg=True, prescan_width=0,
-               overscan_width=0, boarder=64, ntiles=28)
+               overscan_width=0, border=64, ntiles=28)
     # print a summary of the setup
     d.print_summary()
     # assumes all the settings from the ref image generation

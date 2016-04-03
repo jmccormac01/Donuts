@@ -34,7 +34,7 @@ class Donuts(object):
 
     def __init__(self, refimage, image_ext=0, exposure='EXPTIME',
                  normalise=True, subtract_bkg=True, prescan_width=0,
-                 overscan_width=0, boarder=64, ntiles=32):
+                 overscan_width=0, border=64, ntiles=32):
         '''Initialise and generate a reference image.
         This reference image is used for measuring frame to frame offsets.
 
@@ -54,7 +54,7 @@ class Donuts(object):
             Width of prescan region (left) in pixels. The default is 0.
         overscan_width : int, optional
             Width of overscan region (right) in pixels. The default is 0.
-        boarder : int, optional
+        border : int, optional
             Width of exclusion area to avoid errors from CCD edge effects.
             The default is 64.
         ntiles : int, optional
@@ -76,7 +76,7 @@ class Donuts(object):
         self.subtract_bkg = subtract_bkg
         self.prescan_width = prescan_width
         self.overscan_width = overscan_width
-        self.boarder = boarder
+        self.border = border
         self.solution_x = 0.0
         self.solution_y = 0.0
         self.base = 512
@@ -116,9 +116,9 @@ class Donuts(object):
             self.dimx = self.dx
             self.dimy = self.dy
         # get the reference data, with tweaked shape if needed
-        self.ref_data = self.image_section[self.boarder:self.dimy - self.boarder,
-                                           self.boarder:self.dimx - self.boarder]
-        # get the working image dimensions after removing the boarder
+        self.ref_data = self.image_section[self.border:self.dimy - self.border,
+                                           self.border:self.dimx - self.border]
+        # get the working image dimensions after removing the border
         self.w_dimy, self.w_dimx = self.ref_data.shape
         # set up tiles for bkg subtract
         self.tilesizex = self.w_dimx // self.ntiles
@@ -313,7 +313,7 @@ class Donuts(object):
         '''
         print('Data Summary:')
         print('\tIlluminated array size: {0:d} x {1:d} pixels'.format(self.dx, self.dy))
-        print('\tExcluding a boarder of {0:d} pixels'.format(self.boarder))
+        print('\tExcluding a border of {0:d} pixels'.format(self.border))
         print('\tMeasuring shifts from central {0:d} x {1:d} pixels'.format(self.w_dimx,
                                                                             self.w_dimy))
         if self.subtract_bkg:
@@ -352,4 +352,3 @@ class Donuts(object):
         else:
             log.warn('No reference image present')
             raise ReferenceImageError
-            
