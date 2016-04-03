@@ -341,7 +341,7 @@ class Donuts(object):
         ------
         None
         '''
-        if self.isRefImage == True:
+        if self.isRefImage:
             self.__get_check_data(checkimage)
             z_pos_x, z_pos_y, phi_ref_check_m_x, phi_ref_check_m_y = self.__cross_correlate()
             self.solution_x = self.__find_solution(z_pos_x, phi_ref_check_m_x)
@@ -351,4 +351,4 @@ class Donuts(object):
             return self.solution_x*u.pixel, self.solution_y*u.pixel
         else:
             log.warn('No reference image present')
-            raise ReferenceImageError
+            raise self.ReferenceImageError
