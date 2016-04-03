@@ -1,19 +1,22 @@
 '''A module containing the Donuts class, used for measuring
 shifts between images in CCD data.
 '''
-from __future__ import print_function, division
-import numpy as np
+from __future__ import print_function
+from __future__ import with_statement
+from __future__ import division
+from scipy.fftpack import ifft
+from scipy.fftpack import fft
+from astropy import units as u
 from astropy.io import fits
 from astropy import log
-from scipy.fftpack import fft
-from scipy.fftpack import ifft
-from scipy import ndimage
 from scipy import conjugate
+from scipy import ndimage
 from scipy import polyfit
+import numpy as np
 
 # to do:
-#   add try/except for opening images etc
-#   set flag when reference image is made, do not run check if no reference
+#   add try/except for opening images etc - IN PROGRESS
+#   set flag when reference image is made, do not run check if no reference - IN PROGRESS
 
 class Donuts(object):
     '''See method docstrings for descriptions
@@ -80,14 +83,16 @@ class Donuts(object):
         self.check_xproj = None
         self.check_yproj = None
 
-        h = fits.open(refimage)
-        self.texp = float(h[self.image_ext].header[exposure])
-        # get image dimmensions
-        if self.overscan_width != 0:
-            self.image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
-        else:
-            self.image_section = h[self.image_ext].data[:, self.prescan_width:]
-        self.dy, self.dx = self.image_section.shape
+        with fits.open(refimage) as h:
+            self.texp = float(h[self.image_ext].header[exposure])
+            # get image dimmensions
+            if self.overscan_width != 0:
+                self.image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
+            else:
+                self.image_section = h[self.image_ext].data[:, self.prescan_width:]
+            self.dy, self.dx = self.image_section.shape
+            self.isRefImage =  True
+        
         # check if the CCD is a funny shape. Normal CCDs should divide by 16 with
         # no remainder. NITES for example does not (1030,1057) instead of (1024,1024)
         rx = self.dx % 16
@@ -170,13 +175,13 @@ class Donuts(object):
         None
         '''
         self.checkimage = checkimage
-        h = fits.open(self.checkimage)
-        if self.overscan_width != 0:
-            self.check_image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
-        else:
-            self.check_image_section = h[self.image_ext].data[:, self.prescan_width:]
-        self.check_data = self.check_image_section[self.border:self.dimy - self.border,
-                                                   self.border:self.dimx - self.border]
+        with fits.open(self.checkimage) as h:
+            if self.overscan_width != 0:
+                self.check_image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
+            else:
+                self.check_image_section = h[self.image_ext].data[:, self.prescan_width:]
+            self.check_data = self.check_image_section[self.border:self.dimy - self.border,
+                                                       self.border:self.dimx - self.border]
         # adjust image if requested - same as reference
         if self.subtract_bkg:
             self.check_bkgmap = self.__generate_bkg_map(self.check_data, self.ntiles,
@@ -311,9 +316,9 @@ class Donuts(object):
 
         Returns
         -------
-        solution_n_x : float
+        solution_n_x : float (units pixel)
             The shift required, in X, to recentre the checkimage into the reference frame
-        solution_n_y : float
+        solution_n_y : float (units pixel)
             The shift required, in Y, to recentre the checkimage into the reference frame
 
         Raises
@@ -326,4 +331,4 @@ class Donuts(object):
         self.solution_y = self.__find_solution(z_pos_y, phi_ref_check_m_y)
         log.debug("X: {0:.2f}".format(self.solution_x))
         log.debug("Y: {0:.2f}".format(self.solution_y))
-        return self.solution_x, self.solution_y
+        return self.solution_x*u.pixel, self.solution_y*u.pixel
