@@ -33,7 +33,9 @@ def test_full_integration():
     d.print_summary()
     # assumes all the settings from the ref image generation
     # and calculates the shift between the images
-    imlist = ['IMAGE80520160114005507.fits','IMAGE80520160114005520.fits', 'IMAGE80520160114005533.fits']
+    imlist = ['IMAGE80520160114005507.fits',
+              'IMAGE80520160114005520.fits',
+              'IMAGE80520160114005533.fits']
     x_expected = [0.00, -0.09, 0.01]
     y_expected = [0.00, 0.24, 0.14]
     for image, x_ex, y_ex in zip(imlist, x_expected, y_expected):

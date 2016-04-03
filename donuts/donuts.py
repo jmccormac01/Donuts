@@ -1,26 +1,36 @@
 '''A module containing the Donuts class, used for measuring
 shifts between images in CCD data.
 '''
-from __future__ import print_function, division
-import numpy as np
-from astropy.io import fits
-from scipy.fftpack import fft
+from __future__ import print_function
+from __future__ import with_statement
+from __future__ import division
 from scipy.fftpack import ifft
-from scipy import ndimage
+from scipy.fftpack import fft
+from astropy import units as u
+from astropy.io import fits
+from astropy import log
 from scipy import conjugate
+from scipy import ndimage
 from scipy import polyfit
+import numpy as np
 
 # to do:
-#   add try/except for opening images etc
-#   set flag when reference image is made, do not run check if no reference
+#   add try/except for opening images etc - IN PROGRESS
+#   set flag when reference image is made, do not run check if no reference - IN PROGRESS
 
 class Donuts(object):
     '''See method docstrings for descriptions
 
     Attributes
     ----------
-    None
+    ReferenceImageError : exception
+        Exception to be raised when there is a problem with the reference image
+    CheckImageError : exception
+        Exception to be raised when there is a problem with the check image
     '''
+
+    ReferenceImageError = Exception('Reference image not found')
+    CheckImageError = Exception('Check image not found')
 
     def __init__(self, refimage, image_ext=0, exposure='EXPTIME',
                  normalise=True, subtract_bkg=True, prescan_width=0,
@@ -70,6 +80,7 @@ class Donuts(object):
         self.solution_x = 0.0
         self.solution_y = 0.0
         self.base = 512
+        self.isRefImage = False
 
         # define here first or pylint cries
         self.checkimage = None
@@ -79,14 +90,21 @@ class Donuts(object):
         self.check_xproj = None
         self.check_yproj = None
 
-        h = fits.open(refimage)
-        self.texp = float(h[self.image_ext].header[exposure])
-        # get image dimmensions
-        if self.overscan_width != 0:
-            self.image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
-        else:
-            self.image_section = h[self.image_ext].data[:, self.prescan_width:]
-        self.dy, self.dx = self.image_section.shape
+        try:
+            with fits.open(refimage) as h:
+                self.texp = float(h[self.image_ext].header[exposure])
+                # get image dimmensions
+                if self.overscan_width != 0:
+                    self.image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
+                else:
+                    self.image_section = h[self.image_ext].data[:, self.prescan_width:]
+                self.dy, self.dx = self.image_section.shape
+                self.isRefImage =  True
+        except IOError:
+            log.warn('Failed to find image {0:s}'.format(refimage))
+            self.isRefImage = False
+            raise self.ReferenceImageError
+
         # check if the CCD is a funny shape. Normal CCDs should divide by 16 with
         # no remainder. NITES for example does not (1030,1057) instead of (1024,1024)
         rx = self.dx % 16
@@ -168,14 +186,18 @@ class Donuts(object):
         ------
         None
         '''
-        self.checkimage = checkimage
-        h = fits.open(self.checkimage)
-        if self.overscan_width != 0:
-            self.check_image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
-        else:
-            self.check_image_section = h[self.image_ext].data[:, self.prescan_width:]
-        self.check_data = self.check_image_section[self.boarder:self.dimy - self.boarder,
-                                                   self.boarder:self.dimx - self.boarder]
+        try:
+            self.checkimage = checkimage
+            with fits.open(self.checkimage) as h:
+                if self.overscan_width != 0:
+                    self.check_image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
+                else:
+                    self.check_image_section = h[self.image_ext].data[:, self.prescan_width:]
+                self.check_data = self.check_image_section[self.boarder:self.dimy - self.boarder,
+                                                           self.boarder:self.dimx - self.boarder]
+        except IOError:
+            log.warn('Failed to find {0:s}'.format(checkimage))
+            raise self.CheckImageError
         # adjust image if requested - same as reference
         if self.subtract_bkg:
             self.check_bkgmap = self.__generate_bkg_map(self.check_data, self.ntiles,
@@ -310,19 +332,24 @@ class Donuts(object):
 
         Returns
         -------
-        solution_n_x : float
+        solution_n_x : float (units pixel)
             The shift required, in X, to recentre the checkimage into the reference frame
-        solution_n_y : float
+        solution_n_y : float (units pixel)
             The shift required, in Y, to recentre the checkimage into the reference frame
 
         Raises
         ------
         None
         '''
-        self.__get_check_data(checkimage)
-        z_pos_x, z_pos_y, phi_ref_check_m_x, phi_ref_check_m_y = self.__cross_correlate()
-        self.solution_x = self.__find_solution(z_pos_x, phi_ref_check_m_x)
-        self.solution_y = self.__find_solution(z_pos_y, phi_ref_check_m_y)
-        print("X: {0:.2f}".format(self.solution_x))
-        print("Y: {0:.2f}".format(self.solution_y))
-        return self.solution_x, self.solution_y
+        if self.isRefImage == True:
+            self.__get_check_data(checkimage)
+            z_pos_x, z_pos_y, phi_ref_check_m_x, phi_ref_check_m_y = self.__cross_correlate()
+            self.solution_x = self.__find_solution(z_pos_x, phi_ref_check_m_x)
+            self.solution_y = self.__find_solution(z_pos_y, phi_ref_check_m_y)
+            print("X: {0:.2f}".format(self.solution_x))
+            print("Y: {0:.2f}".format(self.solution_y))
+            return self.solution_x*u.pixel, self.solution_y*u.pixel
+        else:
+            log.warn('No reference image present')
+            raise ReferenceImageError
+            
