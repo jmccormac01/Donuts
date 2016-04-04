@@ -9,6 +9,9 @@ Donuts
    :alt: Code Health
 .. image:: https://coveralls.io/repos/github/jmccormac01/Donuts/badge.svg?branch=master 
    :target: https://coveralls.io/github/jmccormac01/Donuts?branch=master
+.. image:: https://readthedocs.org/projects/donuts/badge/?version=latest
+   :target: http://donuts.readthedocs.org/en/latest/?badge=latest
+   :alt: Documentation Status
 .. image:: https://badges.gitter.im/jmccormac01/Donuts.svg?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
    :target: https://gitter.im/jmccormac01/Donuts
 
