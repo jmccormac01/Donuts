@@ -2,7 +2,7 @@
 Donuts
 =======
 
-.. image:: https://img.shields.io/pypi/v/donuts.svg
+.. image:: https://img.shields.io/pypi/v/donuts.svg?text=version
     :target:: https://pypi.python.org/pypi/donuts
     :alt: Latest release
 .. image:: http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat
