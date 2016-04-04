@@ -4,7 +4,7 @@ User Documentation
 
 To measure the shifts present in  a series of images requires the
 definition of a reference frame. An image is chosen from the series
-to be the reference. Then Donuts attempts to measure the offset of                                                                                                                             
+to be the reference. Then Donuts attempts to measure the offset of           
 each subsequent image with respect to the reference frame. Reference
 images should be free from unwanted artefacts (satellite trails etc.)
 
@@ -20,7 +20,7 @@ module and set up an instance with some suitable values.
 from donuts import Donuts
 
 # initialize the instance and generate a reference image
-d=Donuts(refimage, image_ext=0, exposure='EXPTIME',
+d=Donuts(refimage='reference.fits', image_ext=0, exposure='EXPTIME',
          normalise=True, subtract_bkg=True, prescan_width=0,
          overscan_width=0, border=64, ntiles=32)
 ``` 
@@ -37,25 +37,42 @@ about your imaging device.
 
 Donuts applies several corrections to each image before measuring the shifts. 
 
-* 1. Donuts measures the shape of the image array. If an axis of found to be
+* 1. Donuts measures the shape of the image array. If an axis is found to be
 indivisible by 16, that image axis is truncated to the nearest multiple of 512
 pixels. This affects CCDs with non-standard image sizes only. 512 x 512 pixels 
 is assumed to be the smallest usable CCD size.
-* 2. Donuts then removes a boarder from the edge of the image using the value 
-described above.
-* 3. An optional correction for exposure time is possible by setting the option
-```normalise=True``` and providing the header keyword that contains the exposure
-time to the ```exposure``` argument described above. This allows for varying 
-exposure times without the need for separate analysis. 
+* 2. Donuts then optionally (but highly recommended) removes a boarder from the 
+edge of the image using the option described above.
+* 3. An optional (but recommended) correction for exposure time is possible by 
+setting the option ```normalise=True``` and providing the header keyword that 
+contains the exposuretime, using the ```exposure``` option described above. 
+This allows for varying exposure times without the need for separate analysis. 
 * 4. A futher optional (but recommended) correction for the sky background is
-possible. Donuts by design will lock onto the most dominant 'feature' in a series
+possible. By design, Donuts will lock onto the most dominant 'feature' in a series
 of images. Under normal circumstances this will be the forrest of stellar profiles
-in the collapsed image projections. However, under new moon conditions, a strong 
-vignetting pattern for example, might be the dominate feature and will result
-in poor performance. Subtracting the sky background fixes this. The sky
-background is calculated using a coarse grid ```ntiles``` by ```ntiles```. 
-The median value in each grid section is taken and the coarse grid is resampled
-back to the resolution of the data array and subtracted from each image. 
+in the collapsed image projections. However, under new moon conditions for 
+example, a strong vignetting pattern, might be the dominate feature and will 
+result in poor performance. Subtracting the sky background fixes this. The sky
+background is calculated using the median pixel value in a coarse grid
+ ```ntiles``` by ```ntiles``` on each image. The median-sampled coarse grid is
+then resampled back to the resolution of the data array and subtracted from each 
+image. This removes any strong gradients or vignetting that may dominate the
+shift calculation. 
 
+Once the object has been initialized and a reference image has been generated, 
+all subsequent images are corrected using the same process as the reference 
+image. Finally the shift between each image and reference is measured. To measure 
+the shift, simply pass the Donuts object a ```checkimage``` using the 
+```measure_shift``` method. 
 
+```python
+d.measure_shift(checkimage='compare.fits')
+```
 
+The shift in X and Y is returned using dimmensions of ```astropy.units.pixel```.
+
+A summary of the object's settings can be seen using:
+
+```python
+d.print_summary()
+```
