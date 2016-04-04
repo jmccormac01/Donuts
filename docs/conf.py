@@ -77,17 +77,7 @@ copyright = '{0}, {1}'.format(
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 
-
-try:
-    __import__(setup_cfg['package_name'])
-except ImportError:
-    # Building from inside the docs/ directory?
-    if os.path.basename(os.getcwd()) == 'docs':
-        donuts_path = os.path.abspath(os.path.join('..', 'donuts'))
-        if os.path.isdir(donuts_path):
-            sys.path.insert(1, os.path.dirname(donuts_path))
-    __import__(setup_cfg['package_name'])
-
+__import__(setup_cfg['package_name'])
 package = sys.modules[setup_cfg['package_name']]
 
 # The short X.Y version.
