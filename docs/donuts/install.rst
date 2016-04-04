@@ -8,7 +8,7 @@ Requirements
 Donuts has the following requirements:
 
 * `Python <https://www.python.org>`_ 2.6, 2.7, 3.4 or 3.5
-* `Astropy`_ 1.0 or later
+* `Astropy <http://www.astropy.org/>`_ 1.0 or later
 * `Numpy <http://www.numpy.org>`_ 1.9 or later
 * `Scipy <https://www.scipy.org>`_ 0.15 or later
 
