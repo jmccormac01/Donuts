@@ -19,7 +19,10 @@ import numpy as np
 #   set flag when reference image is made, do not run check if no reference - IN PROGRESS
 
 class Donuts(object):
-    '''See method docstrings for descriptions
+    '''This class provides methods for measuring shifts between
+    a series of images of the same star field. First we initialise
+    the object and generate a reference image. Subsequent images are 
+    aligned to this frame of this reference image.
 
     Attributes
     ----------
@@ -316,9 +319,9 @@ class Donuts(object):
 
         Returns
         -------
-        solution_n_x : float (units pixel)
+        solution_x : float (units pixel)
             The shift required, in X, to recentre the checkimage into the reference frame
-        solution_n_y : float (units pixel)
+        solution_y : float (units pixel)
             The shift required, in Y, to recentre the checkimage into the reference frame
 
         Raises
