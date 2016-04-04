@@ -31,7 +31,7 @@ DESCRIPTION = metadata.get('description', 'Astropy affiliated package')
 AUTHOR = metadata.get('author', '')
 AUTHOR_EMAIL = metadata.get('author_email', '')
 LICENSE = metadata.get('license', 'unknown')
-URL = metadata.get('url', 'http://astropy.org')
+URL = metadata.get('url', 'https://github.com/jmccormac01/Donuts')
 
 # Get the long description from the package's docstring
 # __import__(PACKAGENAME)
@@ -113,6 +113,21 @@ setup(name=PACKAGENAME,
       license=LICENSE,
       url=URL,
       long_description=LONG_DESCRIPTION,
+      classifiers=[
+          'Development Status :: 3 - Alpha',
+          'Intended Audience :: Science/Research',
+          'License :: OSI Approved :: MIT License',
+          'Operating System :: OS Independent',
+          'Programming Language :: Python',
+          'Programming Language :: Python :: 2',
+          'Programming Language :: Python :: 2.6',
+          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.3',
+          'Programming Language :: Python :: 3.4',
+          'Programming Language :: Python :: 3.5',
+          'Topic :: Scientific/Engineering :: Astronomy',
+      ],        
       cmdclass=cmdclassd,
       zip_safe=False,
       use_2to3=True,
