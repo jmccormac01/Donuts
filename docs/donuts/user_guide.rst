@@ -16,7 +16,9 @@ from unwanted artefacts (satellite trails etc.)
 Example usage
 -------------
 
-The example below shows typical usage of the ``donuts`` api::
+The example below shows typical usage of the ``donuts`` api:
+
+.. doctest-skip::
 
     >>> from donuts import Donuts
     >>> reference_image_name = 'image1.fits'
@@ -111,8 +113,10 @@ that may dominate the shift calculation.
 Summary of object settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A summary of the object's settings can be seen using::
-    
+A summary of the object's settings can be seen using:
+
+.. doctest-skip::
+
     >>> d.print_summary()
 
 
@@ -121,7 +125,9 @@ Computing per-image offsets
 
 With a ``Donuts`` object, the x/y translation required to align the
 image into the reference image is given by the ``measure_shift`` method,
-e.g.::
+e.g.:
+
+.. doctest-skip::
 
     >>> x, y = d.measure_shift(checkimage='image.fits')
 
