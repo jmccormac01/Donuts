@@ -19,19 +19,19 @@ Example usage
 The example below shows typical usage of the ``donuts`` api::
 
     >>> from donuts import Donuts
-    >>> reference_image_name = 'image1.fits'
-    >>> science_image_names = ['image2.fits', 'image2.fits']
+    >>> reference_image_name = 'J17490840-001.fit'
+    >>> science_image_names = ['J17490840-002.fit', 'J17490840-003.fit']
     >>> # Construct a donuts object
     >>> d = Donuts(
     ...   refimage=reference_image_name,
     ...   image_ext=0,
-    ...   overscan_width=20,
-    ...   prescan_width=20,
+    ...   overscan_width=0,
+    ...   prescan_width=0,
     ...   border=64,
     ...   normalise=True,
-    ...   exposure='EXPOSURE',
+    ...   exposure='EXPTIME',
     ...   subtract_bkg=True,
-    ...   ntiles=32)
+    ...   ntiles=28)
     >>> # for each image, compute the x/y translation required
     ... # to align the images onto the reference image
     >>> for image in science_image_names:
@@ -123,6 +123,6 @@ With a ``Donuts`` object, the x/y translation required to align the
 image into the reference image is given by the ``measure_shift`` method,
 e.g.::
 
-    >>> x, y = d.measure_shift(checkimage='image.fits')
+    >>> x, y = d.measure_shift(checkimage='J17490840-003.fit')
 
 x and y are returned in pixel units.
