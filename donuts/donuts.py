@@ -14,10 +14,6 @@ from scipy import ndimage
 from scipy import polyfit
 import numpy as np
 
-# to do:
-#   add try/except for opening images etc - IN PROGRESS
-#   set flag when reference image is made, do not run check if no reference - IN PROGRESS
-
 class Donuts(object):
     '''This class provides methods for measuring shifts between
     a series of images of the same star field. First we initialise
@@ -69,22 +65,14 @@ class Donuts(object):
         self.image_ext = image_ext
         self.ntiles = ntiles
         self.normalise = normalise
-        self.refimage = refimage
         self.subtract_bkg = subtract_bkg
         self.prescan_width = prescan_width
         self.overscan_width = overscan_width
         self.border = border
-        self.solution_x = 0.0
-        self.solution_y = 0.0
-        self.base = 512
-
-        # define here first or pylint cries
-        self.checkimage = None
+        self.solution_x = 0.0*u.pixel
+        self.solution_y = 0.0*u.pixel
         self.check_data = None
-        self.check_image_section = None
-        self.check_bkgmap = None
-        self.check_xproj = None
-        self.check_yproj = None
+        base = 512
 
         with fits.open(refimage) as h:
             try:
@@ -97,40 +85,38 @@ class Donuts(object):
             self.texp = float(exposure_time_value)
             # get image dimmensions
             if self.overscan_width != 0:
-                self.image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
+                image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
             else:
-                self.image_section = h[self.image_ext].data[:, self.prescan_width:]
-            self.dy, self.dx = self.image_section.shape
-            self.isRefImage =  True
+                image_section = h[self.image_ext].data[:, self.prescan_width:]
+            self.dy, self.dx = image_section.shape
         
         # check if the CCD is a funny shape. Normal CCDs should divide by 16 with
         # no remainder. NITES for example does not (1030,1057) instead of (1024,1024)
         rx = self.dx % 16
         ry = self.dy % 16
         if rx > 0 or ry > 0:
-            self.dimx = int(self.dx // self.base) * self.base
-            self.dimy = int(self.dy // self.base) * self.base
+            self.dimx = int(self.dx // base) * base
+            self.dimy = int(self.dy // base) * base
         else:
             self.dimx = self.dx
             self.dimy = self.dy
         # get the reference data, with tweaked shape if needed
-        self.ref_data = self.image_section[self.border:self.dimy - self.border,
-                                           self.border:self.dimx - self.border]
+        ref_data = image_section[self.border:self.dimy - self.border,
+                                 self.border:self.dimx - self.border]
         # get the working image dimensions after removing the border
-        self.w_dimy, self.w_dimx = self.ref_data.shape
+        self.w_dimy, self.w_dimx = ref_data.shape
         # set up tiles for bkg subtract
         self.tilesizex = self.w_dimx // self.ntiles
         self.tilesizey = self.w_dimy // self.ntiles
         # adjust image if requested
         if self.subtract_bkg:
-            self.bkgmap = self.__generate_bkg_map(self.ref_data, self.ntiles,
-                                                  self.tilesizex, self.tilesizey)
-            self.ref_data = self.ref_data - self.bkgmap
+            bkgmap = self.__generate_bkg_map(ref_data, self.ntiles,
+                                             self.tilesizex, self.tilesizey)
+            ref_data = ref_data - bkgmap
         if self.normalise:
-            self.ref_data = self.ref_data / self.texp
-
-        self.ref_xproj = np.sum(self.ref_data, axis=0)
-        self.ref_yproj = np.sum(self.ref_data, axis=1)
+            ref_data = ref_data / self.texp
+        self.ref_xproj = np.sum(ref_data, axis=0)
+        self.ref_yproj = np.sum(ref_data, axis=1)
 
     def __generate_bkg_map(self, data, tile_num, tilesizex, tilesizey):
         '''Create a background map.
@@ -184,19 +170,18 @@ class Donuts(object):
         ------
         None
         '''
-        self.checkimage = checkimage
-        with fits.open(self.checkimage) as h:
+        with fits.open(checkimage) as h:
             if self.overscan_width != 0:
-                self.check_image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
+                check_image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
             else:
-                self.check_image_section = h[self.image_ext].data[:, self.prescan_width:]
-            self.check_data = self.check_image_section[self.border:self.dimy - self.border,
-                                                       self.border:self.dimx - self.border]
+                check_image_section = h[self.image_ext].data[:, self.prescan_width:]
+            self.check_data = check_image_section[self.border:self.dimy - self.border,
+                                                  self.border:self.dimx - self.border]
         # adjust image if requested - same as reference
         if self.subtract_bkg:
-            self.check_bkgmap = self.__generate_bkg_map(self.check_data, self.ntiles,
-                                                        self.tilesizex, self.tilesizey)
-            self.check_data = self.check_data - self.check_bkgmap
+            check_bkgmap = self.__generate_bkg_map(self.check_data, self.ntiles,
+                                                   self.tilesizex, self.tilesizey)
+            self.check_data = self.check_data - check_bkgmap
         if self.normalise:
             self.check_data = self.check_data / self.texp
 
@@ -216,13 +201,13 @@ class Donuts(object):
         None
 
         '''
-        self.check_xproj = np.sum(self.check_data, axis=0)
-        self.check_yproj = np.sum(self.check_data, axis=1)
+        check_xproj = np.sum(self.check_data, axis=0)
+        check_yproj = np.sum(self.check_data, axis=1)
         # FFT of the projection spectra
         f_ref_xproj = fft(self.ref_xproj)
         f_ref_yproj = fft(self.ref_yproj)
-        f_check_xproj = fft(self.check_xproj)
-        f_check_yproj = fft(self.check_yproj)
+        f_check_xproj = fft(check_xproj)
+        f_check_yproj = fft(check_yproj)
         # cross correlate in and look for the maximium correlation
         f_ref_xproj_conj = conjugate(f_ref_xproj)
         f_ref_yproj_conj = conjugate(f_ref_yproj)
@@ -288,7 +273,7 @@ class Donuts(object):
             tst[2] = phi_ref_check_m[1].real
             coeffs = polyfit(lra, tst, 2)
             solution = -coeffs[1] / (2 * coeffs[0])
-        return solution
+        return solution*u.pixel
 
     def print_summary(self):
         '''Print a summary of the current settings
@@ -339,6 +324,6 @@ class Donuts(object):
         z_pos_x, z_pos_y, phi_ref_check_m_x, phi_ref_check_m_y = self.__cross_correlate()
         self.solution_x = self.__find_solution(z_pos_x, phi_ref_check_m_x)
         self.solution_y = self.__find_solution(z_pos_y, phi_ref_check_m_y)
-        log.debug("X: {0:.2f}".format(self.solution_x))
-        log.debug("Y: {0:.2f}".format(self.solution_y))
-        return self.solution_x*u.pixel, self.solution_y*u.pixel
+        log.debug("X: {0:.2f}".format(self.solution_x.value))
+        log.debug("Y: {0:.2f}".format(self.solution_y.value))
+        return self.solution_x, self.solution_y
