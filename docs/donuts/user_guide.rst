@@ -9,7 +9,7 @@ including defocused observations.
 To measure the shifts present in a series of images requires the
 definition of a reference frame. An image must be chosen from the series
 to be the reference. This is treated as 0,0 in the translational 
-coordinate system and Donuts then measures the shift of each subsequent
+coordinate syst. Donuts then measures the shift of each subsequent
 image with respect to the reference. Reference images should be free 
 from unwanted artefacts (satellite trails etc.)
 
@@ -100,13 +100,13 @@ Background subtraction
 By design, Donuts will lock onto the most dominant 'feature' in a series
 of images. Under normal circumstances this will be the forrest of stellar 
 profiles in the collapsed image projections. However, under new moon 
-conditions for example, a strong vignetting pattern, might be the dominant 
+conditions for example, a strong vignetting pattern might be the dominant 
 feature and will result in poor performance. Subtracting the sky background 
 fixes this. The sky background is calculated using the median pixel value in a 
 coarse grid ``ntiles`` by ``ntiles`` on each image. The median-sampled coarse 
-grid is then resampled back to the resolution of the data array and subtracted 
-from each image. This removes any strong gradients or vignetting that may 
-dominate the shift calculation. 
+grid is then interpolated and resampled back to the resolution of the data array 
+and subtracted from each image. This removes any strong gradients or vignetting 
+that may dominate the shift calculation. 
 
 Summary of object settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
