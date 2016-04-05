@@ -19,5 +19,5 @@ def test_no_exposure_time_keyword_uses_1(tmpdir):
 def test_open_invalid_filename(tmpdir):
     fname = tmpdir.join('test.fits')
 
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(IOError):
         d = Donuts(str(fname))
