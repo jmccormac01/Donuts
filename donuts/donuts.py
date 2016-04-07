@@ -166,7 +166,7 @@ class Donuts(object):
     	------
     	None
     	'''
-    	if self.subtract_bkg:
+        if self.subtract_bkg:
             bkgmap = self.__generate_bkg_map(data, self.ntiles,
                                              self.tilesizex, self.tilesizey)
             data = data - bkgmap
