@@ -149,23 +149,23 @@ class Donuts(object):
         return bkgmap
     
     def __apply_corrections(self,data):
-    	'''Apply sky_bkg and/or exposure time corrections to data
+        '''Apply sky_bkg and/or exposure time corrections to data
 
-    	Parameters
-    	----------
-    	data : array-like
-    		Image array to correct
+        Parameters
+        ----------
+        data : array-like
+            Image array to correct
 
-    	Returns
-    	-------
-    	data : array-like
-    		Corrected image array, if corrections enabled. 
-    		Original image array, if not.
+        Returns
+        -------
+        data : array-like
+            Corrected image array, if corrections enabled. 
+            Original image array, if not.
 
-    	Raises
-    	------
-    	None
-    	'''
+        Raises
+  	    ------
+        None
+        '''
         if self.subtract_bkg:
             bkgmap = self.__generate_bkg_map(data, self.ntiles,
                                              self.tilesizex, self.tilesizey)
