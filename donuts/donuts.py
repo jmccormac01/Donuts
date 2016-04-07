@@ -338,8 +338,8 @@ class Donuts(object):
         '''
         self.__get_check_data(checkimage)
         z_pos_x, z_pos_y, phi_ref_check_m_x, phi_ref_check_m_y = self.__cross_correlate()
-        self.solution_x = self.__find_solution(z_pos_x, phi_ref_check_m_x)
-        self.solution_y = self.__find_solution(z_pos_y, phi_ref_check_m_y)
+        solution_x = self.__find_solution(z_pos_x, phi_ref_check_m_x)
+        solution_y = self.__find_solution(z_pos_y, phi_ref_check_m_y)
         log.debug("X: {0:.2f}".format(self.solution_x.value))
         log.debug("Y: {0:.2f}".format(self.solution_y.value))
-        return self.solution_x, self.solution_y
+        return solution_x, solution_y
