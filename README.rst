@@ -5,6 +5,8 @@ Donuts
 .. image:: https://img.shields.io/pypi/v/donuts.svg?text=version
     :target: https://pypi.python.org/pypi/donuts
     :alt: Latest Pypi Release
+.. image:: https://img.shields.io/pypi/pyversions/donuts.svg
+    :target: https://pypi.python.org/pypi/donuts
 .. image:: http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat
     :target: http://www.astropy.org/
     :alt: Powered by astropy

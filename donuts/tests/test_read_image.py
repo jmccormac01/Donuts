@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from astropy.io import fits
 
 from donuts import Donuts
@@ -13,3 +14,10 @@ def test_no_exposure_time_keyword_uses_1(tmpdir):
 
     d = Donuts(str(fname))
     assert np.isclose(d.texp, 1.0)
+
+
+def test_open_invalid_filename(tmpdir):
+    fname = tmpdir.join('test.fits')
+
+    with pytest.raises(IOError):
+        d = Donuts(str(fname))
