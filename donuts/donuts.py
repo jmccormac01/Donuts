@@ -75,21 +75,20 @@ class Donuts(object):
         base = 512
 
         with fits.open(refimage) as h:
-            try:
-                exposure_time_value = h[self.image_ext].header[exposure]
-            except KeyError:
-                log.warning('Exposure time keyword "{0}" not found, assuming 1.0'.format(
-                    exposure))
-                exposure_time_value = 1.0
-
-            self.texp = float(exposure_time_value)
+            if self.normalise:
+            	try:
+                	exposure_time_value = h[self.image_ext].header[exposure]
+            	except KeyError:
+                	log.warning('Exposure time keyword "{0}" not found, assuming 1.0'.format(
+                    			exposure))
+                	exposure_time_value = 1.0
+            	self.texp = float(exposure_time_value)
             # get image dimmensions
             if self.overscan_width != 0:
                 image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
             else:
                 image_section = h[self.image_ext].data[:, self.prescan_width:]
-            self.dy, self.dx = image_section.shape
-        
+            self.dy, self.dx = image_section.shape  
         # check if the CCD is a funny shape. Normal CCDs should divide by 16 with
         # no remainder. NITES for example does not (1030,1057) instead of (1024,1024)
         rx = self.dx % 16
@@ -109,12 +108,8 @@ class Donuts(object):
         self.tilesizex = self.w_dimx // self.ntiles
         self.tilesizey = self.w_dimy // self.ntiles
         # adjust image if requested
-        if self.subtract_bkg:
-            bkgmap = self.__generate_bkg_map(ref_data, self.ntiles,
-                                             self.tilesizex, self.tilesizey)
-            ref_data = ref_data - bkgmap
-        if self.normalise:
-            ref_data = ref_data / self.texp
+        ref_data=self.__apply_corrections(ref_data)
+        # collapse 2D array into 2x1D arrays for X and Y directions
         self.ref_xproj = np.sum(ref_data, axis=0)
         self.ref_yproj = np.sum(ref_data, axis=1)
 
@@ -152,7 +147,33 @@ class Donuts(object):
         # resample it out to data size
         bkgmap = ndimage.zoom(coarse, (tilesizey, tilesizex), order=2)
         return bkgmap
+    
+    def __apply_corrections(self,data):
+    	'''Apply sky_bkg and/or exposure time corrections to data
 
+    	Parameters
+    	----------
+    	data : array-like
+    		Image array to correct
+
+    	Returns
+    	-------
+    	data : array-like
+    		Corrected image array, if corrections enabled. 
+    		Original image array, if not.
+
+    	Raises
+    	------
+    	None
+    	'''
+    	if self.subtract_bkg:
+            bkgmap = self.__generate_bkg_map(data, self.ntiles,
+                                             self.tilesizex, self.tilesizey)
+            data = data - bkgmap
+        if self.normalise:
+            data = data / self.texp
+        return data
+    
     def __get_check_data(self, checkimage):
         '''Grab the check_data array
         This is done using the same settings as the reference image
@@ -177,13 +198,8 @@ class Donuts(object):
                 check_image_section = h[self.image_ext].data[:, self.prescan_width:]
             self.check_data = check_image_section[self.border:self.dimy - self.border,
                                                   self.border:self.dimx - self.border]
-        # adjust image if requested - same as reference
-        if self.subtract_bkg:
-            check_bkgmap = self.__generate_bkg_map(self.check_data, self.ntiles,
-                                                   self.tilesizex, self.tilesizey)
-            self.check_data = self.check_data - check_bkgmap
-        if self.normalise:
-            self.check_data = self.check_data / self.texp
+        # adjust image if requested - same ad reference image
+        self.check_data=self.__apply_corrections(self.check_data)                                          
 
     def __cross_correlate(self):
         '''Cross correlate the reference & check images
