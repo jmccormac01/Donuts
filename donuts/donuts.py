@@ -107,7 +107,7 @@ class Donuts(object):
         self.tilesizex = self.w_dimx // self.ntiles
         self.tilesizey = self.w_dimy // self.ntiles
         # adjust image if requested
-        ref_data=self.__apply_corrections(ref_data)
+        ref_data = self.__apply_corrections(ref_data)
         # collapse 2D array into 2x1D arrays for X and Y directions
         self.ref_xproj = np.sum(ref_data, axis=0)
         self.ref_yproj = np.sum(ref_data, axis=1)
