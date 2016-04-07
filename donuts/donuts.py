@@ -76,13 +76,13 @@ class Donuts(object):
 
         with fits.open(refimage) as h:
             if self.normalise:
-            	try:
-                	exposure_time_value = h[self.image_ext].header[exposure]
-            	except KeyError:
-                	log.warning('Exposure time keyword "{0}" not found, assuming 1.0'.format(
-                    			exposure))
-                	exposure_time_value = 1.0
-            	self.texp = float(exposure_time_value)
+                try:
+                    exposure_time_value = h[self.image_ext].header[exposure]
+                except KeyError:
+                    log.warning('Exposure time keyword "{0}" not found, assuming 1.0'.format(
+                                exposure))
+                    exposure_time_value = 1.0
+                self.texp = float(exposure_time_value)
             # get image dimmensions
             if self.overscan_width != 0:
                 image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
@@ -163,7 +163,7 @@ class Donuts(object):
             Original image array, if not.
 
         Raises
-  	    ------
+        ------
         None
         '''
         if self.subtract_bkg:
