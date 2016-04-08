@@ -2,15 +2,29 @@
 Donuts
 =======
 
+.. image:: https://img.shields.io/pypi/v/donuts.svg?text=version
+    :target: https://pypi.python.org/pypi/donuts
+    :alt: Latest Pypi Release
+.. image:: https://img.shields.io/pypi/pyversions/donuts.svg
+    :target: https://pypi.python.org/pypi/donuts
+.. image:: http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat
+    :target: http://www.astropy.org/
+    :alt: Powered by astropy
 .. image:: https://travis-ci.org/jmccormac01/Donuts.svg?branch=master
     :target: https://travis-ci.org/jmccormac01/Donuts
+    :alt: Travis Build Status
 .. image:: https://landscape.io/github/jmccormac01/Donuts/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/jmccormac01/Donuts/master
-   :alt: Code Health
+    :target: https://landscape.io/github/jmccormac01/Donuts/master
+    :alt: Code Health
 .. image:: https://coveralls.io/repos/github/jmccormac01/Donuts/badge.svg?branch=master 
-   :target: https://coveralls.io/github/jmccormac01/Donuts?branch=master
+    :target: https://coveralls.io/github/jmccormac01/Donuts?branch=master
+    :alt: Test Coverage
+.. image:: https://readthedocs.org/projects/donuts/badge/?version=latest
+    :target: http://donuts.readthedocs.org/en/latest/
+    :alt: Latest Documentation Status
 .. image:: https://badges.gitter.im/jmccormac01/Donuts.svg?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
-   :target: https://gitter.im/jmccormac01/Donuts
+    :target: https://gitter.im/jmccormac01/Donuts
+    :alt: Gitter Chat
 
 A science frame autoguiding and image alignment algorithm with sub-pixel precision, capable of guiding on defocused stars. 
 

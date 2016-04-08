@@ -71,7 +71,6 @@ class Donuts(object):
         self.border = border
         self.solution_x = 0.0*u.pixel
         self.solution_y = 0.0*u.pixel
-        self.check_data = None
         base = 512
 
         with fits.open(refimage) as h:
@@ -108,7 +107,7 @@ class Donuts(object):
         self.tilesizex = self.w_dimx // self.ntiles
         self.tilesizey = self.w_dimy // self.ntiles
         # adjust image if requested
-        ref_data=self.__apply_corrections(ref_data)
+        ref_data = self.__apply_corrections(ref_data)
         # collapse 2D array into 2x1D arrays for X and Y directions
         self.ref_xproj = np.sum(ref_data, axis=0)
         self.ref_yproj = np.sum(ref_data, axis=1)
@@ -185,7 +184,8 @@ class Donuts(object):
 
         Returns
         -------
-        None
+        check_data : array-like
+            Array of the image pixels used for alignment
 
         Raises
         ------
@@ -196,12 +196,13 @@ class Donuts(object):
                 check_image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
             else:
                 check_image_section = h[self.image_ext].data[:, self.prescan_width:]
-            self.check_data = check_image_section[self.border:self.dimy - self.border,
+            check_data = check_image_section[self.border:self.dimy - self.border,
                                                   self.border:self.dimx - self.border]
         # adjust image if requested - same ad reference image
-        self.check_data=self.__apply_corrections(self.check_data)                                          
+        check_data = self.__apply_corrections(check_data)
+        return check_data
 
-    def __cross_correlate(self):
+    def __cross_correlate(self, check_data):
         '''Cross correlate the reference & check images
         
         Parameters
@@ -217,8 +218,8 @@ class Donuts(object):
         None
 
         '''
-        check_xproj = np.sum(self.check_data, axis=0)
-        check_yproj = np.sum(self.check_data, axis=1)
+        check_xproj = np.sum(check_data, axis=0)
+        check_yproj = np.sum(check_data, axis=1)
         # FFT of the projection spectra
         f_ref_xproj = fft(self.ref_xproj)
         f_ref_yproj = fft(self.ref_yproj)
@@ -336,10 +337,12 @@ class Donuts(object):
         ------
         None
         '''
-        self.__get_check_data(checkimage)
-        z_pos_x, z_pos_y, phi_ref_check_m_x, phi_ref_check_m_y = self.__cross_correlate()
-        self.solution_x = self.__find_solution(z_pos_x, phi_ref_check_m_x)
-        self.solution_y = self.__find_solution(z_pos_y, phi_ref_check_m_y)
-        log.debug("X: {0:.2f}".format(self.solution_x.value))
-        log.debug("Y: {0:.2f}".format(self.solution_y.value))
-        return self.solution_x, self.solution_y
+        check_data = self.__get_check_data(checkimage)
+        z_pos_x, z_pos_y, phi_ref_check_m_x, phi_ref_check_m_y = self.__cross_correlate(
+            check_data
+        )
+        solution_x = self.__find_solution(z_pos_x, phi_ref_check_m_x)
+        solution_y = self.__find_solution(z_pos_y, phi_ref_check_m_y)
+        log.debug("X: {0:.2f}".format(solution_x.value))
+        log.debug("Y: {0:.2f}".format(solution_y.value))
+        return solution_x, solution_y
