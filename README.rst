@@ -10,7 +10,8 @@ Donuts
 .. image:: http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat
     :target: http://www.astropy.org/
     :alt: Powered by astropy
-.. image:: https://travis-ci.org/jmccormac01/Donuts.svg?branch=master
+|
+ .. image:: https://travis-ci.org/jmccormac01/Donuts.svg?branch=master
     :target: https://travis-ci.org/jmccormac01/Donuts
     :alt: Travis Build Status
 .. image:: https://landscape.io/github/jmccormac01/Donuts/master/landscape.svg?style=flat
@@ -34,25 +35,25 @@ Project documentation: https://donuts.readthedocs.org/en/latest/
 Motivation
 ----------
 
-We operate and have access to several telescopes (NGTS, NITES, Warwick
+We operate or have access to several telescopes (NGTS, NITES, Warwick
 1m, 1.5m San Pedro Martir) that require precise autoguiding. Sometimes
-we must defocus the telescope for various reasons, but we'd still
-like to autoguide. Donuts was designed to allow this. It had to be
-simple, fast and accurate. It works well as an autoguiding algorithm for
-equatorial telescopes (no field rotation).
+we need to defocus a telescope but we would still like to autoguide. 
+Donuts was designed to allow this. The algorithm had to be
+simple, fast and accurate. It has been shown to perform well as an 
+autoguiding algorithm for equatorial telescopes (no field rotation).
 
-The process for aligning apertures for photometry is essentially the
-reverse. Rather than correcting the telescope pointing, the apertures
+The process of aligning apertures for photometry is essentially the same. 
+Rather than correcting the telescope pointing, the apertures
 must track the drift of the stars. Donuts can therefore be used to track
 the stellar positions for CCD photometry also.
 
 By default Donuts measures frame-to-frame translational offsets (X
-and Y) using all the stars in the image. This can be adjusted in the
-settings to select a specific region of interest (for extremly wide or
+and Y) using all the stars in the image. The algorithm could be adjusted 
+in the to select a specific region of interest (for extremely wide or
 distorted fields).
 
 The algorithm has its limitations. It currently does not deal with
-rotation and large drifts, where the field moves by approx. half a FOV
+rotation or very large drifts - where the field moves by approx. half a FOV
 or more. Our paper describing the details can be found here:
 
 http://adsabs.harvard.edu/abs/2013PASP..125..548M
@@ -60,14 +61,19 @@ http://adsabs.harvard.edu/abs/2013PASP..125..548M
 Example
 -------
 
-Below is an sample of 10 nights autoguiding residuals from NGTS while using Donuts. The upper plot shows the frame to frame error, while the bottom shows the drift which would have occured, if not for Donuts. Aligning photometry apertures is essentially the same process and similar performance is expected under that scenario. We routinely achieve an autoguiding RMS 1/20 pixels with NGTS. 
+Below is a sample of 10 nights autoguiding residuals from NGTS while using 
+Donuts. The upper plot shows the frame-to-frame error, while the bottom 
+shows the drift which would have occured if not for Donuts. Aligning 
+photometry apertures is essentially the same process and similar performance
+is expected under that scenario. We routinely achieve an autoguiding RMS of 
+1/20 pixels with NGTS. 
 
 .. image:: AgResiduals_802_March2016.png
 
 Contributors
 ------------
 
-`James McCormac <https://github.com/jmccormac01>`_.
+`James McCormac <https://github.com/jmccormac01>`_,
 `Simon Walker <https://github.com/mindriot101>`_.
 
 
