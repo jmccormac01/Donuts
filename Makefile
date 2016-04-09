@@ -7,6 +7,7 @@ help:
 	@echo "- test"
 	@echo "- package"
 	@echo "- build-docs"
+	@echo "- build"
 	@echo "- tox"
 	@echo "- sign"
 
@@ -26,3 +27,6 @@ package:
 
 sign:
 	for file in $(DISTFILES); do gpg --detach-sign -a $$file; done
+
+build:
+	python setup.py build
