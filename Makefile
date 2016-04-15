@@ -5,6 +5,7 @@ all: help
 help:
 	@echo "Tasks:"
 	@echo "- test"
+	@echo "- fulltest"
 	@echo "- package"
 	@echo "- build-docs"
 	@echo "- build"
@@ -13,6 +14,9 @@ help:
 
 test:
 	python setup.py test
+
+fulltest:
+	python setup.py test -a '--cache-dir=/tmp/donutscache' --remote-data
 
 build-docs:
 	python setup.py build_docs
