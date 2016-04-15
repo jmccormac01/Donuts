@@ -1,5 +1,5 @@
 '''Test to run synthetic data through Donuts'''
-import pytest
+from astropy.tests.helper import pytest
 import numpy as np
 from .synthetic_data import (generate_synthetic_data,
                              generate_background,
