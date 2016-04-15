@@ -1,9 +1,10 @@
-from astropy.utils.data import get_pkg_data_filename
+import os
+from astropy.utils.data import download_file
 
+ROOT_URL = 'http://deneb.astro.warwick.ac.uk/phsnag/donuts'
 
-def get_test_filename(filename):
+def get_test_filename(filename, cache=True):
     '''Get a test filename from the package directory
     '''
-    return get_pkg_data_filename(
-        '../data/{filename}'.format(filename=filename)
-    )
+    url = os.path.join(ROOT_URL, filename)
+    return download_file(url, cache=cache)
