@@ -1,4 +1,5 @@
 DISTFILES := $(shell find dist -name 'donuts*' | grep -v asc)
+FULLTEST_CACHE_DIR := /tmp/donutscache
 
 all: help
 
@@ -16,7 +17,8 @@ test:
 	python setup.py test
 
 fulltest:
-	python setup.py test -a '--cache-dir=/tmp/donutscache' --remote-data
+	mkdir -p $(FULLTEST_CACHE_DIR)
+	python setup.py test -a "--cache-dir=$(FULLTEST_CACHE_DIR)" --remote-data
 
 build-docs:
 	python setup.py build_docs
