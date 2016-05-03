@@ -95,11 +95,17 @@ class TestImageNormalisation(object):
         image.normalise(exposure_keyword='EXPOSURE')
         assert np.allclose(image.raw_region, original_data)
 
+    def test_no_image_region(self):
+        image = Image(generate_image(2048, 2048))
+
+        with pytest.raises(RuntimeError) as exc_info:
+            image.normalise(exposure_keyword='EXPOSURE')
+
+        assert 'image region' in str(exc_info.value).lower()
 
 class TestBackgroundSubtraction(object):
 
     def test_constant_background(self):
-        pytest.skip()
         image = Image(generate_image(2048, 2048), None)
         image.raw_region = np.ones((2048, 2048))
         image.remove_background()

@@ -1,6 +1,7 @@
 import numpy as np
 import warnings
 from astropy import log
+from scipy import ndimage
 
 
 class Image(object):
@@ -29,10 +30,12 @@ class Image(object):
             )
             exposure_time_value = 1.0
 
+        if self.raw_region is None:
+            raise RuntimeError('Image region has not been computed.'
+                               'Please ensure the `#trim` method has been called')
+
         self.raw_region = self.raw_region / exposure_time_value
-
         return self
-
 
     def trim(self, prescan_width=0, overscan_width=0, border=64):
         if overscan_width > 0 and prescan_width > 0:
@@ -44,7 +47,7 @@ class Image(object):
         else:
             image_section = self.raw_image
 
-        dy, dx = image_section.shape  
+        dy, dx = image_section.shape
 
         # check if the CCD is a funny shape. Normal CCDs should divide by 16
         # with no remainder. NITES for example does not (1030,1057)
@@ -64,10 +67,17 @@ class Image(object):
         self.raw_region = image_section[
             border:dimy - border, border:dimx - border
         ]
+        return self
 
     def remove_background(self, ntiles=32):
         dim_x, dim_y = self.raw_region.shape
         tilesize_x, tilesize_y = dim_x // ntiles, dim_y // ntiles
+        self.sky_background = self.__generate_bkg_map(
+            data=self.raw_region,
+            tile_num=ntiles,
+            tilesizex=tilesize_x,
+            tilesizey=tilesize_y
+        )
 
     def __generate_bkg_map(self, data, tile_num, tilesizex, tilesizey):
         '''Create a background map.
