@@ -20,7 +20,7 @@ Donuts
     :target: https://coveralls.io/github/jmccormac01/Donuts?branch=master
     :alt: Test Coverage
 .. image:: https://readthedocs.org/projects/donuts/badge/?version=latest
-    :target: http://donuts.readthedocs.org/en/latest/
+    :target: http://donuts.readthedocs.io/en/latest/
     :alt: Latest Documentation Status
 .. image:: https://badges.gitter.im/jmccormac01/Donuts.svg?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
     :target: https://gitter.im/jmccormac01/Donuts
