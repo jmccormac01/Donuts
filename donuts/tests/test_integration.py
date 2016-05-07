@@ -30,7 +30,7 @@ def test_full_integration():
     # upon generation of the reference image
 
     test_ref_image = get_test_filename('IMAGE80520160114005507.fits')
-    d = Donuts(refimage_filename=test_ref_image, image_ext=0, exposure_keyname='EXPOSURE',
+    d = Donuts(refimage=test_ref_image, image_ext=0, exposure='EXPOSURE',
                normalise=True, subtract_bkg=True, prescan_width=20,
                overscan_width=20, border=64, ntiles=32)
     # print a summary of the setup
@@ -59,8 +59,8 @@ def test_custom_preconstruct_code():
             raise TypeError('bad')
 
     with pytest.raises(TypeError):
-        d = Donuts(refimage_filename=test_ref_image, image_ext=0,
-                   exposure_keyname='EXPOSURE', normalise=True,
+        d = Donuts(refimage=test_ref_image, image_ext=0,
+                   exposure='EXPOSURE', normalise=True,
                    subtract_bkg=True, prescan_width=20, overscan_width=20,
                    border=64, ntiles=32, image_class=CustomImage)
 
@@ -74,7 +74,7 @@ def test_custom_postconstruct_code():
             raise TypeError('bad')
 
     with pytest.raises(TypeError):
-        d = Donuts(refimage_filename=test_ref_image, image_ext=0,
-                   exposure_keyname='EXPOSURE', normalise=True,
+        d = Donuts(refimage=test_ref_image, image_ext=0,
+                   exposure='EXPOSURE', normalise=True,
                    subtract_bkg=True, prescan_width=20, overscan_width=20,
                    border=64, ntiles=32, image_class=CustomImage)

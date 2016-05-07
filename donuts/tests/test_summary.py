@@ -7,8 +7,8 @@ from ..donuts import Donuts
 def build_object(subtract_background):
     filename = get_test_filename('IMAGE80520160114005507.fits')
     return Donuts(
-        refimage_filename=filename,
-        exposure_keyname='EXPOSURE',
+        refimage=filename,
+        exposure='EXPOSURE',
         prescan_width=20,
         overscan_width=20,
         ntiles=32,

@@ -17,7 +17,7 @@ class Donuts(object):
     None
     '''
 
-    def __init__(self, refimage_filename, image_ext=0, exposure_keyname='EXPTIME',
+    def __init__(self, refimage, image_ext=0, exposure='EXPTIME',
                  normalise=True, subtract_bkg=True, prescan_width=0,
                  overscan_width=0, border=64, ntiles=32, image_class=Image):
         '''Initialise and generate a reference image.
@@ -25,11 +25,11 @@ class Donuts(object):
 
         Parameters
         ----------
-        refimage_filename : str
+        refimage : str
             The image representing the reference frame.
         image_ext: int, optional
             The fits image extension to extract. The default is 0.
-        exposure_keyname : str, optional
+        exposure : str, optional
             Fits header keyword for exposure time. The default is `EXPTIME`.
         normalise : bool, optional
             Convert image counts to counts/s. The default is True.
@@ -57,13 +57,13 @@ class Donuts(object):
         self.image_class = image_class
         self.image_ext = image_ext
         self.ntiles = ntiles
-        self.exposure_keyname = exposure_keyname
+        self.exposure_keyname = exposure
         self.normalise = normalise
         self.subtract_bkg = subtract_bkg
         self.prescan_width = prescan_width
         self.overscan_width = overscan_width
         self.border = border
-        self.refimage_filename = refimage_filename
+        self.refimage_filename = refimage
 
         self.reference_image = self.construct_object(self.refimage_filename)
 

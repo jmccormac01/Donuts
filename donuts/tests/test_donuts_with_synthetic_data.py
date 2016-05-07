@@ -95,7 +95,7 @@ def test_same_image_gives_0_offsets(tmpdir):
     write_data(str(refimage), data)
     write_data(str(scienceimage), data)
 
-    d = Donuts(refimage_filename=str(refimage), image_ext=0, exposure_keyname='EXPOSURE',
+    d = Donuts(refimage=str(refimage), image_ext=0, exposure='EXPOSURE',
                normalise=True, subtract_bkg=True, prescan_width=PRESCAN_WIDTH,
                overscan_width=OVERSCAN_WIDTH, border=8, ntiles=16)
     result = d.measure_shift(str(scienceimage))
@@ -136,7 +136,7 @@ def test_known_offset(dx, dy, tmpdir):
     write_data(str(refimage), refimage_data)
     write_data(str(scienceimage), scienceimage_data)
 
-    d = Donuts(refimage_filename=str(refimage), image_ext=0, exposure_keyname='EXPOSURE',
+    d = Donuts(refimage=str(refimage), image_ext=0, exposure='EXPOSURE',
                normalise=True, subtract_bkg=True, prescan_width=PRESCAN_WIDTH,
                overscan_width=OVERSCAN_WIDTH, border=8, ntiles=16)
     result = d.measure_shift(str(scienceimage))

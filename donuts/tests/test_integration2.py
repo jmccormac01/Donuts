@@ -25,7 +25,7 @@ def test_full_integration2():
     None
     """
     test_ref_image = get_test_filename('J17490840-001.fit')
-    d = Donuts(refimage_filename=test_ref_image, image_ext=0, exposure_keyname='EXPTIME',
+    d = Donuts(refimage=test_ref_image, image_ext=0, exposure='EXPTIME',
                normalise=True, subtract_bkg=True, prescan_width=0,
                overscan_width=0, border=64, ntiles=28)
     
