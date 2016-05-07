@@ -108,15 +108,13 @@ class Donuts(object):
         ------
         None
         '''
+        # TODO: print more useful things!
         print('Data Summary:')
-        print('\tIlluminated array size: {0:d} x {1:d} pixels'.format(self.dx, self.dy))
         print('\tExcluding a border of {0:d} pixels'.format(self.border))
-        print('\tMeasuring shifts from central {0:d} x {1:d} pixels'.format(self.w_dimx,
-                                                                            self.w_dimy))
+
         if self.subtract_bkg:
             print('Background Subtraction Summary:')
             print('\tUsing {0:d} x {1:d} grid of tiles'.format(self.ntiles, self.ntiles))
-            print('\tEach {0:d} x {1:d} pixels'.format(self.tilesizex, self.tilesizey))
 
     def measure_shift(self, checkimage_filename):
         '''Generate a check image and measure its offset from the reference
