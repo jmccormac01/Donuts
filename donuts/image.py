@@ -10,12 +10,8 @@ from scipy.fftpack import fft, ifft
 
 
 class Image(object):
-    '''Encapsulate the transformations applied to images
-
-    * Normalise
-    * Trim
-    * Remove sky background
-    * Compute projections
+    '''Low level class which handles the image transformations and cross
+    correlation with another ``Image`` class.
     '''
 
     def __init__(self, data, header=None):
@@ -32,6 +28,24 @@ class Image(object):
         self.y = None
 
     def normalise(self, exposure_keyword='EXPOSURE'):
+        '''Convert the image data into ADU per second
+
+        Parameters
+        ----------
+        exposure_keyword : str
+            Fits header keyword for exposure time. The default is `EXPTIME`.
+
+        Returns
+        -------
+        self : ``Image``
+            The current ``Image`` instance
+
+        Raises
+        ------
+        RuntimeError if the image region has not been trimmed (see the ``trim``
+        method).
+        '''
+
         try:
             self.exposure_time_value = self.header[exposure_keyword]
         except KeyError:
@@ -49,6 +63,37 @@ class Image(object):
         return self
 
     def trim(self, prescan_width=0, overscan_width=0, border=64):
+        '''Remove the optional prescan and overscan from the image, as well
+        as the outer `n` rows/colums of the image. Finally ensure the imaging
+        region is the correct dimensions for `scipy.ndimage.resize (i.e. a
+        multiple of 16.
+
+        Parameters
+        ----------
+        prescan_width : int
+            Remove the first ``prescan_width`` columns from the image, assuming
+            the are not in the imaging region.
+
+        overscan_width : int
+            Remove the last ``overscan_width`` columns from the image, assuming
+            the are not in the imaging region.
+
+        border : int
+            Ignore the first/last ``border`` rows/columns from the image,
+            assuming that they are not "typical", a common case with edge
+            effects in CCDs.
+
+        Returns
+        -------
+        self : ``Image``
+            The current ``Image`` instance
+
+        Raises
+        ------
+        None
+
+
+        '''
         if overscan_width > 0 and prescan_width > 0:
             image_section = self.raw_image[:, prescan_width:-overscan_width]
         elif overscan_width > 0:
@@ -81,6 +126,25 @@ class Image(object):
         return self
 
     def remove_background(self, ntiles=32):
+        '''Subtract the background from the image. See ``_generate_bkg_map`` for
+        more details
+
+        Parameters
+        ----------
+        ntiles : int
+            Number of tiles used to sample the sky background.
+            The default is 32.
+
+        Returns
+        -------
+        self : ``Image``
+            The current ``Image`` instance
+
+
+        Raises
+        ------
+        None
+        '''
         dim_x, dim_y = self.raw_region.shape
         tilesize_x, tilesize_y = dim_x // ntiles, dim_y // ntiles
         self.sky_background = self._generate_bkg_map(
@@ -93,6 +157,30 @@ class Image(object):
         return self
 
     def compute_projections(self):
+        '''
+        Compute the projection profiles. Follows the following logic:
+            * if the image has not been trimmed and not background subtracted,
+            then use the raw pixels
+            * otherwise if the image has been trimmed then use the trimmed
+            pixels
+            * otherwise use the background subtracted pixels
+
+        See ``_projection_from_image`` for details of the projection
+        calculation.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        self : ``Image``
+            The current ``Image`` instance
+
+        Raises
+        ------
+        None
+        '''
         if self.backsub_region is None and self.raw_region is None:
             region = self.raw_image
         elif self.backsub_region is None:
@@ -107,6 +195,28 @@ class Image(object):
         return self
 
     def compute_offset(self, reference_image):
+        '''
+        Given another ``Image`` object, compute the shift in pixel units.
+
+        This method sets ``self.x`` and ``self.y`` to the pixel shift, and
+        returns the instance so in effect the user gets a "new" ``Image``
+        instance with these variables set.
+
+        Parameters
+        ----------
+        reference_image : ``Image``
+            The reference image to compare to. Typically when called using the
+            ``Donuts`` class this will be whatever was defined as the
+            "reference" image
+        Returns
+        -------
+        self : ``Image``
+            The current ``Image`` instance
+
+        Raises
+        ------
+        None
+        '''
         reference_image._assert_projections()
         self._assert_projections()
 
@@ -119,15 +229,33 @@ class Image(object):
         return self
 
     def preconstruct_hook(self):
-        '''Hook to modify the class before any standard processing'''
+        '''Hook to modify the class before any standard processing
+
+        To add functionality, alter ``self.raw_image``
+        '''
         pass
 
     def postconstruct_hook(self):
-        '''Hook to modify the class after any standard processing'''
+        '''Hook to modify the class after any standard processing
+
+        To add functionality, alter ``self.backsub_region``
+        '''
         pass
 
     def _assert_projections(self):
         '''Make sure the projections have been computed
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        ValueError if the projections have not been computed
         '''
         if self.proj_x is None or self.proj_y is None:
             raise ValueError(
@@ -151,7 +279,7 @@ class Image(object):
         Returns
         -------
         solution : float
-            The shift in pixels between two images along the 
+            The shift in pixels between two images along the
             given axis
 
         Raises

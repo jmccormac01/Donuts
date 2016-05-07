@@ -68,6 +68,22 @@ class Donuts(object):
         self.reference_image = self.construct_object(self.refimage_filename)
 
     def construct_object(self, filename):
+        '''Builds an ``image_class`` instance which performs most of the work.
+        See the ``Image`` class for more information.
+
+        Parameters
+        ----------
+        filename : str
+            FITS file to open and build an ``image_class`` instance from.
+
+        Returns
+        -------
+        ``image_class`` instance
+
+        Raises
+        ------
+        None
+        '''
         with fits.open(filename) as hdulist:
             hdu = hdulist[self.image_ext]
             image = hdu.data
@@ -130,10 +146,10 @@ class Donuts(object):
 
         Returns
         -------
-        solution_x : float (units pixel)
-            The shift required, in X, to recentre the checkimage into the reference frame
-        solution_y : float (units pixel)
-            The shift required, in Y, to recentre the checkimage into the reference frame
+        image: ``Image``
+            Instance of an ``Image`` object, which has the ``x`` and ``y``
+            atributes storing the value of the shift between the chosen image
+            and reference image (passed to the ``Donuts`` constructor)
 
         Raises
         ------
