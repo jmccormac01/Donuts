@@ -307,3 +307,10 @@ def test_no_exposure_time_keyword_uses_1():
     image.normalise()
 
     assert np.isclose(image.exposure_time_value, 1.0)
+
+def test_image_class_has_pre_setup_hook():
+    image = Image(generate_image(2048, 2048))
+    assert hasattr(image, 'preconstruct_hook')
+
+def test_image_class_has_post_setup_hook():
+    assert hasattr(Image, 'postconstruct_hook')

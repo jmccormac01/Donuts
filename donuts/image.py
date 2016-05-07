@@ -119,6 +119,14 @@ class Image(object):
 
         return self
 
+    def preconstruct_hook(self):
+        '''Hook to modify the class before any standard processing'''
+        pass
+
+    def postconstruct_hook(self):
+        '''Hook to modify the class after any standard processing'''
+        pass
+
     def _assert_projections(self):
         '''Make sure the projections have been computed
         '''

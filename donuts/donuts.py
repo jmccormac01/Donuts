@@ -74,6 +74,7 @@ class Donuts(object):
             header = hdu.header
 
         image = self.image_class(image, header)
+        image.preconstruct_hook()
         image.trim(
             prescan_width=self.prescan_width,
             overscan_width=self.overscan_width,
@@ -90,6 +91,7 @@ class Donuts(object):
                 ntiles=self.ntiles
             )
 
+        image.postconstruct_hook()
         image.compute_projections()
 
         return image
