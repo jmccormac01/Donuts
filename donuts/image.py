@@ -80,6 +80,19 @@ class Image(object):
         )
         self.backsub_region = self.raw_region - self.sky_background
 
+    def compute_projections(self):
+        if self.backsub_region is None and self.raw_region is None:
+            region = self.raw_image
+        elif self.backsub_region is None:
+            region = self.raw_region
+        else:
+            region = self.backsub_region
+
+        assert len(region.shape) == 2
+
+        self.proj_x = np.sum(region, axis=0)
+        self.proj_y = np.sum(region, axis=1)
+
     def __generate_bkg_map(self, data, tile_num, tilesizex, tilesizey):
         '''Create a background map.
         This map may be subtracted from each image before doing the cross correlation
