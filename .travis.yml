@@ -43,7 +43,7 @@ env:
         # to repeat them for all configurations.
         - NUMPY_VERSION=1.10
         - ASTROPY_VERSION=stable
-        - PIP_DEPENDENCIES=''
+        - PIP_DEPENDENCIES='mock'
         # For this package-template, we include examples of Cython modules,
         # so Cython is required for testing. If your package does not include
         # Cython code, you can set CONDA_DEPENDENCIES=''
@@ -59,7 +59,7 @@ matrix:
 
         # Do a coverage test in Python 2.
         - python: 2.7
-          env: SETUP_CMD='test --coverage' PIP_DEPENDENCIES='mock'
+          env: SETUP_CMD='test --coverage'
 
         # Python 3.3 doesn't have numpy 1.10 in conda, revoke this commit once
         # it's available in the astropy-ci-extras channel
