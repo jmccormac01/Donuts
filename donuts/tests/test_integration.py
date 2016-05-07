@@ -32,7 +32,7 @@ def test_full_integration():
                normalise=True, subtract_bkg=True, prescan_width=20,
                overscan_width=20, border=64, ntiles=32)
     # print a summary of the setup
-    # d.print_summary()
+    d.print_summary()
     # assumes all the settings from the ref image generation
     # and calculates the shift between the images
     imlist = ['IMAGE80520160114005507.fits',

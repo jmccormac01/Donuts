@@ -28,6 +28,9 @@ def test_full_integration2():
     d = Donuts(refimage_filename=test_ref_image, image_ext=0, exposure_keyname='EXPTIME',
                normalise=True, subtract_bkg=True, prescan_width=0,
                overscan_width=0, border=64, ntiles=28)
+    
+    # print a summary of the setup
+    d.print_summary()
     # assumes all the settings from the ref image generation
     # and calculates the shift between the images
     imlist = ['J17490840-001.fit',
