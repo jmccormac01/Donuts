@@ -1,24 +1,15 @@
 '''A module containing the Donuts class, used for measuring
 shifts between images in CCD data.
 '''
-from __future__ import print_function
-from __future__ import with_statement
-from __future__ import division
-from scipy.fftpack import ifft
-from scipy.fftpack import fft
-from astropy import units as u
+from __future__ import print_function, with_statement, division
 from astropy.io import fits
-from astropy import log
-from scipy import conjugate
-from scipy import ndimage
-from scipy import polyfit
-import numpy as np
 from .image import Image
+
 
 class Donuts(object):
     '''This class provides methods for measuring shifts between
     a series of images of the same star field. First we initialise
-    the object and generate a reference image. Subsequent images are 
+    the object and generate a reference image. Subsequent images are
     aligned to this frame of this reference image.
 
     Attributes
@@ -75,7 +66,6 @@ class Donuts(object):
 
         self.reference_image = self.construct_object(self.refimage_filename)
 
-
     def construct_object(self, filename):
         with fits.open(filename) as hdulist:
             hdu = hdulist[self.image_ext]
@@ -84,114 +74,24 @@ class Donuts(object):
 
         image = Image(image, header)
         image.trim(
-                prescan_width=self.prescan_width,
-                overscan_width=self.overscan_width,
-                border=self.border
-                )
+            prescan_width=self.prescan_width,
+            overscan_width=self.overscan_width,
+            border=self.border
+        )
 
         if self.normalise:
             image.normalise(
-                    exposure_keyword=self.exposure_keyname
-                    )
+                exposure_keyword=self.exposure_keyname
+            )
 
         if self.subtract_bkg:
             image.remove_background(
-                    ntiles=self.ntiles
-                    )
+                ntiles=self.ntiles
+            )
 
         image.compute_projections()
 
         return image
-   
-    def __cross_correlate(self, check_data):
-        '''Cross correlate the reference & check images
-        
-        Parameters
-        ----------
-        None
-        
-        Returns
-        -------
-        None
-
-        Raises
-        ------
-        None
-
-        '''
-        check_xproj = np.sum(check_data, axis=0)
-        check_yproj = np.sum(check_data, axis=1)
-        # FFT of the projection spectra
-        f_ref_xproj = fft(self.ref_xproj)
-        f_ref_yproj = fft(self.ref_yproj)
-        f_check_xproj = fft(check_xproj)
-        f_check_yproj = fft(check_yproj)
-        # cross correlate in and look for the maximium correlation
-        f_ref_xproj_conj = conjugate(f_ref_xproj)
-        f_ref_yproj_conj = conjugate(f_ref_yproj)
-        complex_sum_x = f_ref_xproj_conj * f_check_xproj
-        complex_sum_y = f_ref_yproj_conj * f_check_yproj
-        phi_ref_check_m_x = ifft(complex_sum_x)
-        phi_ref_check_m_y = ifft(complex_sum_y)
-        z_x = max(phi_ref_check_m_x)
-        z_pos_x = np.where(phi_ref_check_m_x == z_x)
-        z_y = max(phi_ref_check_m_y)
-        z_pos_y = np.where(phi_ref_check_m_y == z_y)
-        return z_pos_x, z_pos_y, phi_ref_check_m_x, phi_ref_check_m_y
-    
-    def __find_solution(self, z_pos, phi_ref_check_m):
-        '''Covert the CCF into a shift solution for individual axes
-        The location of the peak in the CCF is converted to a shift
-        in pixels here. Sub pixel resolution is achieved by solving a
-        quadratic for the minimum, using the three pixels around the peak.
-
-        Parameters
-        ----------
-        z_pos : int
-            The location of the peak in the CCF
-        phi_ref_check_m: array-like
-            The CCF array from which to extract a correction
-
-        Returns
-        -------
-        solution : float
-            The shift in pixels between two images along the 
-            given axis
-
-        Raises
-        ------
-        None
-        '''
-        tst = np.empty(3)
-        if z_pos[0][0] <= len(phi_ref_check_m) / 2 and z_pos[0][0] != 0:
-            lra = [z_pos[0][0] - 1, z_pos[0][0], z_pos[0][0] + 1]
-            tst[0] = phi_ref_check_m[lra[0]].real
-            tst[1] = phi_ref_check_m[lra[1]].real
-            tst[2] = phi_ref_check_m[lra[2]].real
-            coeffs = polyfit(lra, tst, 2)
-            solution = -(-coeffs[1] / (2 * coeffs[0]))
-        elif z_pos[0][0] > len(phi_ref_check_m) / 2 and z_pos[0][0] != len(phi_ref_check_m) - 1:
-            lra = [z_pos[0][0] - 1, z_pos[0][0], z_pos[0][0] + 1]
-            tst[0] = phi_ref_check_m[lra[0]].real
-            tst[1] = phi_ref_check_m[lra[1]].real
-            tst[2] = phi_ref_check_m[lra[2]].real
-            coeffs = polyfit(lra, tst, 2)
-            solution = len(phi_ref_check_m) + (coeffs[1] / (2 * coeffs[0]))
-        elif z_pos[0][0] == len(phi_ref_check_m) - 1:
-            lra = [-1, 0, 1]
-            tst[0] = phi_ref_check_m[-2].real
-            tst[1] = phi_ref_check_m[-1].real
-            tst[2] = phi_ref_check_m[0].real
-            coeffs = polyfit(lra, tst, 2)
-            solution = 1 + (coeffs[1] / (2 * coeffs[0]))
-        else: #if z_pos[0][0] == 0:
-            lra = [1, 0, -1]
-            tst[0] = phi_ref_check_m[-1].real
-            tst[1] = phi_ref_check_m[0].real
-            tst[2] = phi_ref_check_m[1].real
-            coeffs = polyfit(lra, tst, 2)
-            solution = -coeffs[1] / (2 * coeffs[0])
-        return solution*u.pixel
 
     def print_summary(self):
         '''Print a summary of the current settings
@@ -241,16 +141,3 @@ class Donuts(object):
         checkimage = self.construct_object(checkimage_filename)
         checkimage.compute_offset(self.reference_image)
         return checkimage
-
-
-
-
-        # check_data = self.__get_check_data(checkimage)
-        # z_pos_x, z_pos_y, phi_ref_check_m_x, phi_ref_check_m_y = self.__cross_correlate(
-        #     check_data
-        # )
-        # solution_x = self.__find_solution(z_pos_x, phi_ref_check_m_x)
-        # solution_y = self.__find_solution(z_pos_y, phi_ref_check_m_y)
-        # log.debug("X: {0:.2f}".format(solution_x.value))
-        # log.debug("Y: {0:.2f}".format(solution_y.value))
-        # return solution_x, solution_y
