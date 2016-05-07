@@ -1,5 +1,8 @@
 import pytest
+from astropy import units as u
+from astropy.io import fits
 import numpy as np
+from .helpers import get_test_filename
 
 HAS_MOCK = True
 try:
@@ -10,7 +13,7 @@ except ImportError:
     except ImportError:
         HAS_MOCK = False
 
-from donuts.image import Image
+from ..image import Image
 
 
 def generate_image(*shape):
@@ -38,7 +41,12 @@ def test_image_has_default_none_for_xy():
     assert image.x is None and image.y is None
 
 
-class TestImageShapeReading(object):
+def test_header_is_optional():
+    image = Image(generate_image(2048, 2048))
+    assert image.header == {}
+
+
+class TestTrimming(object):
 
     def test_without_border_or_overscans(self):
         image = Image(generate_image(2048, 2048), None)
@@ -64,6 +72,11 @@ class TestImageShapeReading(object):
         image = Image(generate_image(2048, 2048), None)
         image.trim(border=0, prescan_width=64)
         assert image.raw_region.shape == (2048, 1984)
+
+    def test_returns_self(self):
+        image = Image(generate_image(2048, 2048))
+        testvalue = image.trim()
+        assert testvalue is image
 
 
 class TestImageNormalisation(object):
@@ -112,6 +125,12 @@ class TestImageNormalisation(object):
 
         assert 'image region' in str(exc_info.value).lower()
 
+    def test_method_returns_self(self):
+        image = Image(generate_image(2048, 2048))
+        image.trim()
+        testvalue = image.normalise()
+        assert testvalue is image
+
 
 class TestBackgroundSubtraction(object):
 
@@ -139,6 +158,12 @@ class TestBackgroundSubtraction(object):
         assert np.allclose(
             image.backsub_region,
             np.zeros((2048, 2048)))
+
+    def test_method_returns_self(self):
+        image = Image(generate_image(2048, 2048), None)
+        image.raw_region = np.ones((2048, 2048))
+        testvalue = image.remove_background()
+        assert testvalue is image
 
 
 class TestComputeProjections(object):
@@ -173,7 +198,7 @@ class TestComputeProjections(object):
         assert image.proj_y.shape == (1920, )
 
     @pytest.mark.skipif(not HAS_MOCK, reason="Cannot import the `mock` library "
-            "from either the standard library, or as a package")
+                        "from either the standard library, or as a package")
     def test_projections_with_backsub_image(self):
         stub_data = np.ones((2048, 2048))
         image = Image(data=stub_data, header=None)
@@ -186,7 +211,90 @@ class TestComputeProjections(object):
             image.compute_projections()
 
         calls = [
-                mock.call(background_image, axis=0),
-                mock.call(background_image, axis=1),
-                ]
+            mock.call(background_image, axis=0),
+            mock.call(background_image, axis=1),
+        ]
         proj_fn.assert_has_calls(calls)
+
+    def test_method_returns_self(self):
+        image = Image(generate_image(2048, 2048))
+        image.trim()
+        testvalue = image.compute_projections()
+        assert testvalue is image
+
+
+class TestComputeOffset(object):
+
+    @staticmethod
+    def build_image(image_filename):
+        with fits.open(image_filename) as infile:
+            image = Image(infile[0].data, infile[0].header)
+
+        image.trim()
+        image.normalise()
+        image.remove_background()
+        image.compute_projections()
+        return image
+
+    @staticmethod
+    def is_close(x, y):
+        if isinstance(x, u.Quantity):
+            x = x.value
+        if isinstance(y, u.Quantity):
+            y = y.value
+
+        return np.isclose(x, y, rtol=0.1, atol=0.1)
+
+    def test_same_object_gives_same_offset(self, ngts_data):
+        i1 = self.build_image(
+            get_test_filename('IMAGE80520160114005507.fits')
+        )
+        i2 = self.build_image(
+            get_test_filename('IMAGE80520160114005507.fits')
+        )
+        i2.compute_offset(i1)
+
+        assert self.is_close(i2.x, 0.)
+        assert self.is_close(i2.y, 0.)
+
+    def test_error_without_projection_calculation(self, ngts_data):
+        image = Image(ngts_data)
+        assert image.proj_x is None and image.proj_y is None
+
+        with pytest.raises(ValueError) as exc_info:
+            image.compute_offset(image)
+
+        assert 'Please call the #compute_projections method' in str(exc_info.value)
+
+    def test_known_offsets(self):
+        ref_image = self.build_image(
+            get_test_filename('IMAGE80520160114005507.fits')
+        )
+        test_image = self.build_image(
+            get_test_filename('IMAGE80520160114005520.fits')
+        )
+
+        expected = (-0.09, 0.24)
+
+        test_image.compute_offset(ref_image)
+
+        assert self.is_close(test_image.x, expected[0])
+        assert self.is_close(test_image.y, expected[1])
+
+    @pytest.mark.skipif(not HAS_MOCK, reason="Cannot import the `mock` library "
+                        "from either the standard library, or as a package")
+    # Lots of mocking for functions that will fail without proper setup
+    @mock.patch.object(Image, '_assert_projections')
+    @mock.patch.object(Image, '_cross_correlate',
+                       return_value=(None, None, None, None))
+    @mock.patch.object(Image, '_find_solution')
+    def test_method_returns_self(self,
+                                 assert_projections,
+                                 cross_correlate,
+                                 find_solution,
+                                 ):
+        image = Image(generate_image(2048, 2048))
+        image2 = Image(generate_image(2048, 2048))
+
+        testvalue = image2.compute_offset(image)
+        assert testvalue is image2
