@@ -1,0 +1,5 @@
+[run]
+omit =
+    donuts/tests/*
+    donuts/_astropy_init.py
+    donuts/version.py
