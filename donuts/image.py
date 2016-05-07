@@ -12,6 +12,11 @@ from scipy.fftpack import fft, ifft
 
 class Image(object):
     '''Encapsulate the transformations applied to images
+
+    * Normalise
+    * Trim
+    * Remove sky background
+    * Compute projections
     '''
 
     def __init__(self, data, header=None):

@@ -95,11 +95,11 @@ def test_same_image_gives_0_offsets(tmpdir):
     write_data(str(refimage), data)
     write_data(str(scienceimage), data)
 
-    d = Donuts(refimage=str(refimage), image_ext=0, exposure='EXPOSURE',
+    d = Donuts(refimage_filename=str(refimage), image_ext=0, exposure_keyname='EXPOSURE',
                normalise=True, subtract_bkg=True, prescan_width=PRESCAN_WIDTH,
                overscan_width=OVERSCAN_WIDTH, border=8, ntiles=16)
-    x, y = d.measure_shift(str(scienceimage))
-    assert np.isclose(x.value, 0.) and np.isclose(y.value, 0.)
+    result = d.measure_shift(str(scienceimage))
+    assert np.isclose(result.x.value, 0.) and np.isclose(result.y.value, 0.)
 
 
 @pytest.mark.parametrize('dx,dy', [
@@ -136,11 +136,11 @@ def test_known_offset(dx, dy, tmpdir):
     write_data(str(refimage), refimage_data)
     write_data(str(scienceimage), scienceimage_data)
 
-    d = Donuts(refimage=str(refimage), image_ext=0, exposure='EXPOSURE',
+    d = Donuts(refimage_filename=str(refimage), image_ext=0, exposure_keyname='EXPOSURE',
                normalise=True, subtract_bkg=True, prescan_width=PRESCAN_WIDTH,
                overscan_width=OVERSCAN_WIDTH, border=8, ntiles=16)
-    x, y = d.measure_shift(str(scienceimage))
+    result = d.measure_shift(str(scienceimage))
 
     # Fairly large margin for the tolerence as the values are relatively uncertain
-    assert np.isclose(x.value, -dx, rtol=0.5, atol=0.1)
-    assert np.isclose(y.value, -dy, rtol=0.5, atol=0.1)
+    assert np.isclose(result.x.value, -dx, rtol=0.5, atol=0.1)
+    assert np.isclose(result.y.value, -dy, rtol=0.5, atol=0.1)

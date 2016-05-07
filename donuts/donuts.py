@@ -13,6 +13,7 @@ from scipy import conjugate
 from scipy import ndimage
 from scipy import polyfit
 import numpy as np
+from .image import Image
 
 class Donuts(object):
     '''This class provides methods for measuring shifts between
@@ -25,7 +26,7 @@ class Donuts(object):
     None
     '''
 
-    def __init__(self, refimage, image_ext=0, exposure='EXPTIME',
+    def __init__(self, refimage_filename, image_ext=0, exposure_keyname='EXPTIME',
                  normalise=True, subtract_bkg=True, prescan_width=0,
                  overscan_width=0, border=64, ntiles=32):
         '''Initialise and generate a reference image.
@@ -33,11 +34,11 @@ class Donuts(object):
 
         Parameters
         ----------
-        refimage : str
+        refimage_filename : str
             The image representing the reference frame.
         image_ext: int, optional
             The fits image extension to extract. The default is 0.
-        exposure : str, optional
+        exposure_keyname : str, optional
             Fits header keyword for exposure time. The default is `EXPTIME`.
         normalise : bool, optional
             Convert image counts to counts/s. The default is True.
@@ -64,144 +65,44 @@ class Donuts(object):
         '''
         self.image_ext = image_ext
         self.ntiles = ntiles
+        self.exposure_keyname = exposure_keyname
         self.normalise = normalise
         self.subtract_bkg = subtract_bkg
         self.prescan_width = prescan_width
         self.overscan_width = overscan_width
         self.border = border
-        self.solution_x = 0.0*u.pixel
-        self.solution_y = 0.0*u.pixel
-        base = 512
+        self.refimage_filename = refimage_filename
 
-        with fits.open(refimage) as h:
-            if self.normalise:
-                try:
-                    exposure_time_value = h[self.image_ext].header[exposure]
-                except KeyError:
-                    log.warning('Exposure time keyword "{0}" not found, assuming 1.0'.format(
-                                exposure))
-                    exposure_time_value = 1.0
-                self.texp = float(exposure_time_value)
-            # get image dimmensions
-            if self.overscan_width != 0:
-                image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
-            else:
-                image_section = h[self.image_ext].data[:, self.prescan_width:]
-            self.dy, self.dx = image_section.shape  
-        # check if the CCD is a funny shape. Normal CCDs should divide by 16 with
-        # no remainder. NITES for example does not (1030,1057) instead of (1024,1024)
-        rx = self.dx % 16
-        ry = self.dy % 16
-        if rx > 0 or ry > 0:
-            self.dimx = int(self.dx // base) * base
-            self.dimy = int(self.dy // base) * base
-        else:
-            self.dimx = self.dx
-            self.dimy = self.dy
-        # get the reference data, with tweaked shape if needed
-        ref_data = image_section[self.border:self.dimy - self.border,
-                                 self.border:self.dimx - self.border]
-        # get the working image dimensions after removing the border
-        self.w_dimy, self.w_dimx = ref_data.shape
-        # set up tiles for bkg subtract
-        self.tilesizex = self.w_dimx // self.ntiles
-        self.tilesizey = self.w_dimy // self.ntiles
-        # adjust image if requested
-        ref_data = self.__apply_corrections(ref_data)
-        # collapse 2D array into 2x1D arrays for X and Y directions
-        self.ref_xproj = np.sum(ref_data, axis=0)
-        self.ref_yproj = np.sum(ref_data, axis=1)
+        self.reference_image = self.construct_object(self.refimage_filename)
 
-    def __generate_bkg_map(self, data, tile_num, tilesizex, tilesizey):
-        '''Create a background map.
-        This map may be subtracted from each image before doing the cross correlation
 
-        Parameters
-        ----------
-        data : array-like
-            Image array from which to measure sky background
-        tile_num : int
-            Number of tiles along each axis
-        tilesizex : int
-            Size of tiles in X, pixels
-        tilesizey : int
-            Size of tiles in Y, pixels
+    def construct_object(self, filename):
+        with fits.open(filename) as hdulist:
+            hdu = hdulist[self.image_ext]
+            image = hdu.data
+            header = hdu.header
 
-        Returns
-        -------
-        bkgmap : array-like
-            2D map of sky background. This can then be subtracted
-            from each image to improve the shift measurement
+        image = Image(image, header)
+        image.trim(
+                prescan_width=self.prescan_width,
+                overscan_width=self.overscan_width,
+                border=self.border
+                )
 
-        Raises
-        ------
-        None
-        '''
-        # create coarse map
-        coarse = np.empty((tile_num, tile_num))
-        for i in range(0, tile_num):
-            for j in range(0, tile_num):
-                coarse[i][j] = np.median(data[(i * tilesizey):(i + 1) * tilesizey,
-                                              (j * tilesizex):(j + 1) * tilesizex])
-        # resample it out to data size
-        bkgmap = ndimage.zoom(coarse, (tilesizey, tilesizex), order=2)
-        return bkgmap
-    
-    def __apply_corrections(self,data):
-        '''Apply sky_bkg and/or exposure time corrections to data
-
-        Parameters
-        ----------
-        data : array-like
-            Image array to correct
-
-        Returns
-        -------
-        data : array-like
-            Corrected image array, if corrections enabled. 
-            Original image array, if not.
-
-        Raises
-        ------
-        None
-        '''
-        if self.subtract_bkg:
-            bkgmap = self.__generate_bkg_map(data, self.ntiles,
-                                             self.tilesizex, self.tilesizey)
-            data = data - bkgmap
         if self.normalise:
-            data = data / self.texp
-        return data
-    
-    def __get_check_data(self, checkimage):
-        '''Grab the check_data array
-        This is done using the same settings as the reference image
+            image.normalise(
+                    exposure_keyword=self.exposure_keyname
+                    )
 
-        Parameters
-        ----------
-        checkimage : str
-            Image filename to compare to reference image
+        if self.subtract_bkg:
+            image.remove_background(
+                    ntiles=self.ntiles
+                    )
 
-        Returns
-        -------
-        check_data : array-like
-            Array of the image pixels used for alignment
+        image.compute_projections()
 
-        Raises
-        ------
-        None
-        '''
-        with fits.open(checkimage) as h:
-            if self.overscan_width != 0:
-                check_image_section = h[self.image_ext].data[:, self.prescan_width:-self.overscan_width]
-            else:
-                check_image_section = h[self.image_ext].data[:, self.prescan_width:]
-            check_data = check_image_section[self.border:self.dimy - self.border,
-                                                  self.border:self.dimx - self.border]
-        # adjust image if requested - same ad reference image
-        check_data = self.__apply_corrections(check_data)
-        return check_data
-
+        return image
+   
     def __cross_correlate(self, check_data):
         '''Cross correlate the reference & check images
         
@@ -317,13 +218,13 @@ class Donuts(object):
             print('\tUsing {0:d} x {1:d} grid of tiles'.format(self.ntiles, self.ntiles))
             print('\tEach {0:d} x {1:d} pixels'.format(self.tilesizex, self.tilesizey))
 
-    def measure_shift(self, checkimage):
+    def measure_shift(self, checkimage_filename):
         '''Generate a check image and measure its offset from the reference
         This is done using the same settings as the reference image.
 
         Parameters
         ----------
-        checkimage : str
+        checkimage_filename : str
             Image filename to compare to reference image
 
         Returns
@@ -337,12 +238,19 @@ class Donuts(object):
         ------
         None
         '''
-        check_data = self.__get_check_data(checkimage)
-        z_pos_x, z_pos_y, phi_ref_check_m_x, phi_ref_check_m_y = self.__cross_correlate(
-            check_data
-        )
-        solution_x = self.__find_solution(z_pos_x, phi_ref_check_m_x)
-        solution_y = self.__find_solution(z_pos_y, phi_ref_check_m_y)
-        log.debug("X: {0:.2f}".format(solution_x.value))
-        log.debug("Y: {0:.2f}".format(solution_y.value))
-        return solution_x, solution_y
+        checkimage = self.construct_object(checkimage_filename)
+        checkimage.compute_offset(self.reference_image)
+        return checkimage
+
+
+
+
+        # check_data = self.__get_check_data(checkimage)
+        # z_pos_x, z_pos_y, phi_ref_check_m_x, phi_ref_check_m_y = self.__cross_correlate(
+        #     check_data
+        # )
+        # solution_x = self.__find_solution(z_pos_x, phi_ref_check_m_x)
+        # solution_y = self.__find_solution(z_pos_y, phi_ref_check_m_y)
+        # log.debug("X: {0:.2f}".format(solution_x.value))
+        # log.debug("Y: {0:.2f}".format(solution_y.value))
+        # return solution_x, solution_y

@@ -28,11 +28,11 @@ def test_full_integration():
     # upon generation of the reference image
 
     test_ref_image = get_test_filename('IMAGE80520160114005507.fits')
-    d = Donuts(refimage=test_ref_image, image_ext=0, exposure='EXPOSURE',
+    d = Donuts(refimage_filename=test_ref_image, image_ext=0, exposure_keyname='EXPOSURE',
                normalise=True, subtract_bkg=True, prescan_width=20,
                overscan_width=20, border=64, ntiles=32)
     # print a summary of the setup
-    d.print_summary()
+    # d.print_summary()
     # assumes all the settings from the ref image generation
     # and calculates the shift between the images
     imlist = ['IMAGE80520160114005507.fits',
@@ -43,6 +43,6 @@ def test_full_integration():
     for image, x_ex, y_ex in zip(imlist, x_expected, y_expected):
         test_check_image = get_test_filename(image)
 
-        x, y = d.measure_shift(checkimage=test_check_image)
-        assert np.isclose(x.value, x_ex, rtol=0.1, atol=0.1)
-        assert np.isclose(y.value, y_ex, rtol=0.1, atol=0.1)
+        result = d.measure_shift(checkimage_filename=test_check_image)
+        assert np.isclose(result.x.value, x_ex, rtol=0.1, atol=0.1)
+        assert np.isclose(result.y.value, y_ex, rtol=0.1, atol=0.1)
