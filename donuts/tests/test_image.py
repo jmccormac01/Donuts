@@ -1,6 +1,15 @@
 import pytest
 import numpy as np
 
+HAS_MOCK = True
+try:
+    from unittest import mock
+except ImportError:
+    try:
+        import mock
+    except ImportError:
+        HAS_MOCK = False
+
 from donuts.image import Image
 
 
@@ -144,5 +153,40 @@ class TestComputeProjections(object):
         image.compute_projections()
 
         expected_proj_x, expected_proj_y = compute_projections(ngts_data)
+
+        assert np.allclose(image.proj_x, expected_proj_x)
+        assert np.allclose(image.proj_y, expected_proj_y)
+
+    def test_projections_are_computed_from_full_raw_image(self, ngts_data):
+        image = Image(data=ngts_data, header=None)
+        image.compute_projections()
+
         assert image.proj_x.shape == (2048, )
         assert image.proj_y.shape == (2048, )
+
+    def test_projections_with_trimmed_image(self, ngts_data):
+        image = Image(data=ngts_data, header=None)
+        image.trim(border=64)
+        image.compute_projections()
+
+        assert image.proj_x.shape == (1920, )
+        assert image.proj_y.shape == (1920, )
+
+    @pytest.mark.skipif(not HAS_MOCK, reason="Cannot import the `mock` library "
+            "from either the standard library, or as a package")
+    def test_projections_with_backsub_image(self):
+        stub_data = np.ones((2048, 2048))
+        image = Image(data=stub_data, header=None)
+        image.trim(border=64)
+        image.remove_background()
+
+        background_image = image.backsub_region
+
+        with mock.patch.object(image, '_projection_from_image') as proj_fn:
+            image.compute_projections()
+
+        calls = [
+                mock.call(background_image, axis=0),
+                mock.call(background_image, axis=1),
+                ]
+        proj_fn.assert_has_calls(calls)

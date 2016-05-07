@@ -72,7 +72,7 @@ class Image(object):
     def remove_background(self, ntiles=32):
         dim_x, dim_y = self.raw_region.shape
         tilesize_x, tilesize_y = dim_x // ntiles, dim_y // ntiles
-        self.sky_background = self.__generate_bkg_map(
+        self.sky_background = self._generate_bkg_map(
             data=self.raw_region,
             tile_num=ntiles,
             tilesizex=tilesize_x,
@@ -90,10 +90,18 @@ class Image(object):
 
         assert len(region.shape) == 2
 
-        self.proj_x = np.sum(region, axis=0)
-        self.proj_y = np.sum(region, axis=1)
+        self.proj_x = self._projection_from_image(region, axis=0)
+        self.proj_y = self._projection_from_image(region, axis=1)
 
-    def __generate_bkg_map(self, data, tile_num, tilesizex, tilesizey):
+    def _projection_from_image(self, data, axis):
+        '''Function to define the actual process used to compute the
+        projections.  Partially as a point to stub, perhaps as a point to
+        override in a subclass, but also it is easier to understand as it's a
+        pure function
+        '''
+        return np.sum(data, axis=axis)
+
+    def _generate_bkg_map(self, data, tile_num, tilesizex, tilesizey):
         '''Create a background map.
         This map may be subtracted from each image before doing the cross correlation
 
