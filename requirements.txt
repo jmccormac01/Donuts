@@ -2,3 +2,4 @@ astropy==1.1.2
 mock==2.0.0
 numpy==1.11.0
 scipy==0.17.0
+pytest-cov==2.2.1
