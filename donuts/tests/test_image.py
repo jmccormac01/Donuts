@@ -4,14 +4,10 @@ from astropy.io import fits
 import numpy as np
 from .helpers import get_test_filename
 
-HAS_MOCK = True
 try:
     from unittest import mock
 except ImportError:
-    try:
-        import mock
-    except ImportError:
-        HAS_MOCK = False
+    import mock
 
 from ..image import Image
 
@@ -197,8 +193,6 @@ class TestComputeProjections(object):
         assert image.proj_x.shape == (1920, )
         assert image.proj_y.shape == (1920, )
 
-    @pytest.mark.skipif(not HAS_MOCK, reason="Cannot import the `mock` library "
-                        "from either the standard library, or as a package")
     def test_projections_with_backsub_image(self):
         stub_data = np.ones((2048, 2048))
         image = Image(data=stub_data, header=None)
@@ -281,8 +275,6 @@ class TestComputeOffset(object):
         assert self.is_close(test_image.x, expected[0])
         assert self.is_close(test_image.y, expected[1])
 
-    @pytest.mark.skipif(not HAS_MOCK, reason="Cannot import the `mock` library "
-                        "from either the standard library, or as a package")
     # Lots of mocking for functions that will fail without proper setup
     @mock.patch.object(Image, '_assert_projections')
     @mock.patch.object(Image, '_cross_correlate',
