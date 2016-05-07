@@ -19,7 +19,7 @@ class Donuts(object):
 
     def __init__(self, refimage_filename, image_ext=0, exposure_keyname='EXPTIME',
                  normalise=True, subtract_bkg=True, prescan_width=0,
-                 overscan_width=0, border=64, ntiles=32):
+                 overscan_width=0, border=64, ntiles=32, image_class=Image):
         '''Initialise and generate a reference image.
         This reference image is used for measuring frame to frame offsets.
 
@@ -54,6 +54,7 @@ class Donuts(object):
         ------
         None
         '''
+        self.image_class = image_class
         self.image_ext = image_ext
         self.ntiles = ntiles
         self.exposure_keyname = exposure_keyname
@@ -72,7 +73,7 @@ class Donuts(object):
             image = hdu.data
             header = hdu.header
 
-        image = Image(image, header)
+        image = self.image_class(image, header)
         image.trim(
             prescan_width=self.prescan_width,
             overscan_width=self.overscan_width,
