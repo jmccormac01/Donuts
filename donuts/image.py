@@ -21,6 +21,7 @@ class Image(object):
         self.raw_region = None
         self.sky_background = None
         self.backsub_region = None
+        self.exposure_time_value = None
         self.proj_x = None
         self.proj_y = None
         self.x = None
@@ -28,19 +29,19 @@ class Image(object):
 
     def normalise(self, exposure_keyword='EXPOSURE'):
         try:
-            exposure_time_value = self.header[exposure_keyword]
+            self.exposure_time_value = self.header[exposure_keyword]
         except KeyError:
             log.warning(
                 'Exposure time keyword "{0}" not found, assuming 1.0'.format(
                     exposure_keyword)
             )
-            exposure_time_value = 1.0
+            self.exposure_time_value = 1.0
 
         if self.raw_region is None:
             raise RuntimeError('Image region has not been computed.'
                                'Please ensure the `#trim` method has been called')
 
-        self.raw_region = self.raw_region / exposure_time_value
+        self.raw_region = self.raw_region / self.exposure_time_value
         return self
 
     def trim(self, prescan_width=0, overscan_width=0, border=64):

@@ -298,3 +298,12 @@ class TestComputeOffset(object):
 
         testvalue = image2.compute_offset(image)
         assert testvalue is image2
+
+def test_no_exposure_time_keyword_uses_1():
+    data = np.random.uniform(100, 1000, (1024, 1024))
+
+    image = Image(data)
+    image.trim()
+    image.normalise()
+
+    assert np.isclose(image.exposure_time_value, 1.0)
