@@ -1,5 +1,4 @@
 import numpy as np
-import warnings
 from astropy import log
 from astropy import units as u
 from scipy import (
