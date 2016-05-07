@@ -78,6 +78,7 @@ class Image(object):
             tilesizex=tilesize_x,
             tilesizey=tilesize_y
         )
+        self.backsub_region = self.raw_region - self.sky_background
 
     def __generate_bkg_map(self, data, tile_num, tilesizex, tilesizey):
         '''Create a background map.

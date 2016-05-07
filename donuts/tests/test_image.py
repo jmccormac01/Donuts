@@ -103,13 +103,33 @@ class TestImageNormalisation(object):
 
         assert 'image region' in str(exc_info.value).lower()
 
+
 class TestBackgroundSubtraction(object):
+
+    def test_background_is_not_populated_after_init(self):
+        image = Image(generate_image(2048, 2048), None)
+        assert image.sky_background is None
+
+    def test_backsub_is_not_populated_after_init(self):
+        image = Image(generate_image(2048, 2048), None)
+        assert image.backsub_region is None
 
     def test_constant_background(self):
         image = Image(generate_image(2048, 2048), None)
         image.raw_region = np.ones((2048, 2048))
         image.remove_background()
         assert np.allclose(image.sky_background, np.ones((2048, 2048)))
+
+    # TODO: add tests for the background subtraction on non-trivial datasets
+
+    def test_backsub_region_is_populated(self):
+        image = Image(generate_image(2048, 2048), None)
+        image.raw_region = np.ones((2048, 2048))
+        image.remove_background()
+
+        assert np.allclose(
+            image.backsub_region,
+            np.zeros((2048, 2048)))
 
 
 class TestComputeProjections(object):
