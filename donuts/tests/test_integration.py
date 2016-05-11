@@ -2,11 +2,13 @@
 """
 import os.path
 import numpy as np
+from astropy.tests.helper import remote_data
 from .helpers import get_test_filename
 from ..donuts import Donuts
 
 
 # Test the donuts code using real data
+@remote_data
 def test_full_integration():
     """Test real world usage of Donuts with real data
     
