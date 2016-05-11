@@ -7,6 +7,7 @@ help:
 	@echo "Tasks:"
 	@echo "- test"
 	@echo "- fulltest"
+	@echo "- coverage"
 	@echo "- package"
 	@echo "- build-docs"
 	@echo "- build"
@@ -19,6 +20,9 @@ test:
 fulltest:
 	mkdir -p $(FULLTEST_CACHE_DIR)
 	python setup.py test -a "--cache-dir=$(FULLTEST_CACHE_DIR)" --remote-data
+
+coverage:
+	python setup.py test -a "--cov donuts --cov-report html --cov-report term"
 
 build-docs:
 	python setup.py build_docs
