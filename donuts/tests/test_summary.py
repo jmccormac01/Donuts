@@ -1,5 +1,6 @@
 import pytest
 from astropy.io import fits
+from astropy.tests.helper import remote_data
 from .helpers import get_test_filename
 from ..donuts import Donuts
 
@@ -17,6 +18,7 @@ def build_object(subtract_background):
     )
 
 
+@remote_data
 @pytest.mark.parametrize('expected', [
     'Data Summary',
     'Excluding a border of 64 pixels',
@@ -29,6 +31,7 @@ def test_printing(expected, capsys):
     assert expected in out
 
 
+@remote_data
 def test_with_background_subtraction(capsys):
     dobj = build_object(subtract_background=True)
     dobj.print_summary()
@@ -36,6 +39,7 @@ def test_with_background_subtraction(capsys):
     assert 'Background Subtraction Summary' in out
 
 
+@remote_data
 def test_without_background_subtraction(capsys):
     dobj = build_object(subtract_background=False)
     dobj.print_summary()

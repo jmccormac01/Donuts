@@ -50,6 +50,7 @@ def test_full_integration():
         assert np.isclose(result.y.value, y_ex, rtol=0.1, atol=0.1)
 
 
+@remote_data
 def test_custom_preconstruct_code():
     test_ref_image = get_test_filename('IMAGE80520160114005507.fits')
 
@@ -65,6 +66,7 @@ def test_custom_preconstruct_code():
                    border=64, ntiles=32, image_class=CustomImage)
 
 
+@remote_data
 def test_custom_postconstruct_code():
     test_ref_image = get_test_filename('IMAGE80520160114005507.fits')
 

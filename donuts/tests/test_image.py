@@ -1,6 +1,7 @@
 import pytest
 from astropy import units as u
 from astropy.io import fits
+from astropy.tests.helper import remote_data
 import numpy as np
 from .helpers import get_test_filename
 
@@ -239,6 +240,7 @@ class TestComputeOffset(object):
 
         return np.isclose(x, y, rtol=0.1, atol=0.1)
 
+    @remote_data
     def test_same_object_gives_same_offset(self, ngts_data):
         i1 = self.build_image(
             get_test_filename('IMAGE80520160114005507.fits')
@@ -260,6 +262,7 @@ class TestComputeOffset(object):
 
         assert 'Please call the #compute_projections method' in str(exc_info.value)
 
+    @remote_data
     def test_known_offsets(self):
         ref_image = self.build_image(
             get_test_filename('IMAGE80520160114005507.fits')

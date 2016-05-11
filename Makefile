@@ -22,7 +22,7 @@ fulltest:
 	python setup.py test -a "--cache-dir=$(FULLTEST_CACHE_DIR)" --remote-data
 
 coverage:
-	python setup.py test -a "--cov donuts --cov-report html --cov-report term"
+	python setup.py test -a "--cov donuts --cov-report html --cov-report term" --remote-data
 
 build-docs:
 	python setup.py build_docs
