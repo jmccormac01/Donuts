@@ -43,7 +43,7 @@ env:
         # to repeat them for all configurations.
         - NUMPY_VERSION=1.10
         - ASTROPY_VERSION=stable
-        - PIP_DEPENDENCIES=''
+        - PIP_DEPENDENCIES='mock'
         # For this package-template, we include examples of Cython modules,
         # so Cython is required for testing. If your package does not include
         # Cython code, you can set CONDA_DEPENDENCIES=''
@@ -73,7 +73,7 @@ matrix:
         - python: 2.6
           env: SETUP_CMD='egg_info'
         - python: 2.6
-          env: SETUP_CMD='test --remote-data' NUMPY_VERSION=1.9
+          env: SETUP_CMD='test --remote-data' NUMPY_VERSION=1.9 PIP_DEPENDENCIES='mock'
 
 #         # Check for sphinx doc build warnings - we do this first because it
 #         # may run for a long time
@@ -82,13 +82,14 @@ matrix:
 
         # Try Astropy development version
         - python: 2.7
-          env: SETUP_CMD='test --remote-data' ASTROPY_VERSION=development
+          env: SETUP_CMD='test --remote-data' ASTROPY_VERSION=development PIP_DEPENDENCIES='mock'
+
         - python: 3.5
           env: SETUP_CMD='test --remote-data' ASTROPY_VERSION=development
 
         # Try Astropy lts version
         - python: 2.7
-          env: SETUP_CMD='test --remote-data' ASTROPY_VERSION=lts
+          env: SETUP_CMD='test --remote-data' ASTROPY_VERSION=lts PIP_DEPENDENCIES='mock'
         - python: 3.5
           env: SETUP_CMD='test --remote-data' ASTROPY_VERSION=lts
 

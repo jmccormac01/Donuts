@@ -33,6 +33,7 @@ A science frame autoguiding and image alignment algorithm with sub-pixel precisi
 
     donuts/install.rst
     donuts/user_guide.rst
+    donuts/advanced.rst
     donuts/api.rst
 
 .. note::
