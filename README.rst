@@ -29,7 +29,10 @@ Donuts
 A science frame autoguiding and image alignment algorithm with sub-pixel
 precision, capable of guiding on defocused stars.
 
+
 Project documentation: https://donuts.readthedocs.io/en/latest/
+
+See the changelog_ for latest changes.
 
 Motivation
 ----------
@@ -100,3 +103,5 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+.. _changelog: https://github.com/jmccormac01/Donuts/blob/devel/CHANGELOG.md
