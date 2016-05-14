@@ -4,6 +4,8 @@
 
 ## Added
 
+- Swapped the background map creation method to use `scikit-image`. Issue:
+  [#24], PR: [#27]
 - Started [keeping a changelog]
 
 ## [0.0.1dev212] - 11/05/2016
@@ -23,6 +25,10 @@
   ensure the `pypi` package is light. Issue: [#16], PR: [#18]
 
 [Unreleased]: https://github.com/jmccormac01/Donuts/compare/282ca86d01ef...devel
+
+[#24]: https://github.com/jmccormac01/Donuts/issues/24
+
+[#27]: https://github.com/jmccormac01/Donuts/pull/27
 
 [0.0.1dev212]: https://github.com/jmccormac01/Donuts/compare/4798806aa3ef...282ca86d01ef
 
