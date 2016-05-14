@@ -65,8 +65,8 @@ class Image(object):
     def trim(self, prescan_width=0, overscan_width=0, border=64):
         '''Remove the optional prescan and overscan from the image, as well
         as the outer `n` rows/colums of the image. Finally ensure the imaging
-        region is the correct dimensions for `scikit-learn.transform.resize
-        (i.e. a multiple of 16.
+        region is the correct dimensions for `skimage.transform.resize`
+        (i.e. a multiple of 16.)
 
         Parameters
         ----------
