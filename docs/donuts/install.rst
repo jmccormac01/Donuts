@@ -11,6 +11,7 @@ Donuts has the following requirements:
 * `Astropy <http://www.astropy.org/>`_ 1.0 or later
 * `Numpy <http://www.numpy.org>`_ 1.9 or later
 * `Scipy <https://www.scipy.org>`_ 0.15 or later
+* `scikit-image <http://scikit-image.org/>`_ 0.12 or later
 
 Installation from pip
 =====================

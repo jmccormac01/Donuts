@@ -2,10 +2,10 @@ import numpy as np
 from astropy import log
 from astropy import units as u
 from scipy import (
-    ndimage,
     conjugate,
     polyfit,
 )
+from skimage.transform import resize
 from scipy.fftpack import fft, ifft
 
 
@@ -65,8 +65,8 @@ class Image(object):
     def trim(self, prescan_width=0, overscan_width=0, border=64):
         '''Remove the optional prescan and overscan from the image, as well
         as the outer `n` rows/colums of the image. Finally ensure the imaging
-        region is the correct dimensions for `scipy.ndimage.resize (i.e. a
-        multiple of 16.
+        region is the correct dimensions for `skimage.transform.resize`
+        (i.e. a multiple of 16.)
 
         Parameters
         ----------
@@ -376,5 +376,9 @@ class Image(object):
                 coarse[i][j] = np.median(data[(i * tilesizey):(i + 1) * tilesizey,
                                               (j * tilesizex):(j + 1) * tilesizex])
         # resample it out to data size
-        bkgmap = ndimage.zoom(coarse, (tilesizey, tilesizex), order=2)
+        bkgmap = resize(
+            coarse,
+            (tilesizey * tile_num, tilesizex * tile_num),
+            mode='nearest'
+        )
         return bkgmap
