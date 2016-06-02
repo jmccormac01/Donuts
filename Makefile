@@ -13,6 +13,7 @@ help:
 	@echo "- build"
 	@echo "- tox"
 	@echo "- sign"
+	@echo "- upload"
 
 test:
 	python setup.py test
@@ -34,6 +35,9 @@ package:
 	@-rm -r dist 2>/dev/null
 	@mkdir -p dist
 	python setup.py sdist bdist_wheel
+
+upload: package
+	twine upload dist/*
 
 sign:
 	for file in $(DISTFILES); do gpg --detach-sign -a $$file; done
