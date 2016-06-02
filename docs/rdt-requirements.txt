@@ -1,4 +1,4 @@
 astropy
-numpy
+numpy>=1.11.0
 scipy
-scikit-image
+scikit-image>=0.12.3
