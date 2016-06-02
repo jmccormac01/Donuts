@@ -37,7 +37,9 @@ except ImportError:
         a_h_path = os.path.abspath(os.path.join('..', 'astropy_helpers'))
         if os.path.isdir(a_h_path):
             sys.path.insert(1, a_h_path)
+        sys.path.insert(0, '..')
 
+from donuts_version import VERSION
 # Load all of the global Astropy configuration
 from astropy_helpers.sphinx.conf import *
 
@@ -77,13 +79,10 @@ copyright = '{0}, {1}'.format(
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 
-__import__(setup_cfg['package_name'])
-package = sys.modules[setup_cfg['package_name']]
-
 # The short X.Y version.
-version = package.__version__.split('-', 1)[0]
+version = VERSION.split('-', 1)[0]
 # The full version, including alpha/beta/rc tags.
-release = package.__version__
+release = VERSION
 
 
 # -- Options for HTML output ---------------------------------------------------
