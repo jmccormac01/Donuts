@@ -1,0 +1,143 @@
+language: python
+
+python:
+    - 2.7
+    - 3.4
+    - 3.5
+
+# Setting sudo to false opts in to Travis-CI container-based builds.
+sudo: false
+
+# Cache any remote data between runs
+cache:
+  directories:
+    - $HOME/.astropy/cache
+
+# The apt packages below are needed for sphinx builds. A full list of packages
+# that can be included can be found here:
+#
+# https://github.com/travis-ci/apt-package-whitelist/blob/master/ubuntu-precise
+
+addons:
+    apt:
+        packages:
+            - graphviz
+            - texlive-latex-extra
+            - dvipng
+
+notifications:
+    email:
+     - jmccormac001@gmail.com
+     - s.r.walker101@googlemail.com
+    webhooks:
+      urls:
+        - https://webhooks.gitter.im/e/0af4ef0676d0344bd2dc
+      on_success: always
+      on_failure: always
+      on_start: always
+
+env:
+    global:
+        # The following versions are the 'default' for tests, unless
+        # overidden underneath. They are defined here in order to save having
+        # to repeat them for all configurations.
+        - NUMPY_VERSION=1.10
+        - ASTROPY_VERSION=stable
+        - PIP_DEPENDENCIES='mock'
+        # For this package-template, we include examples of Cython modules,
+        # so Cython is required for testing. If your package does not include
+        # Cython code, you can set CONDA_DEPENDENCIES=''
+        - CONDA_DEPENDENCIES='scipy scikit-image'
+    matrix:
+        # Make sure that egg_info works without dependencies
+        - SETUP_CMD='egg_info'
+        # Try all python versions with the latest numpy
+        - SETUP_CMD='test --remote-data'
+
+matrix:
+    include:
+
+        # Do a coverage test in Python 2.
+        - python: 2.7
+          env: SETUP_CMD='test --coverage'
+
+        # Python 3.3 doesn't have numpy 1.10 in conda, revoke this commit once
+        # it's available in the astropy-ci-extras channel
+        - python: 3.3
+          env: SETUP_CMD='egg_info'
+        - python: 3.3
+          env: SETUP_CMD='test --remote-data' NUMPY_VERSION=1.9
+
+        # Python 2.6 is old but we want to support this if possible.
+        # Do the same changes as for python3.3
+        - python: 2.6
+          env: SETUP_CMD='egg_info'
+        - python: 2.6
+          env: SETUP_CMD='test --remote-data' NUMPY_VERSION=1.9 PIP_DEPENDENCIES='mock'
+
+#         # Check for sphinx doc build warnings - we do this first because it
+#         # may run for a long time
+#         - python: 2.7
+#           env: SETUP_CMD='build_sphinx -w'
+
+        # Try Astropy development version
+        - python: 2.7
+          env: SETUP_CMD='test --remote-data' ASTROPY_VERSION=development PIP_DEPENDENCIES='mock'
+
+        - python: 3.5
+          env: SETUP_CMD='test --remote-data' ASTROPY_VERSION=development
+
+        # Try Astropy lts version
+        - python: 2.7
+          env: SETUP_CMD='test --remote-data' ASTROPY_VERSION=lts PIP_DEPENDENCIES='mock'
+        - python: 3.5
+          env: SETUP_CMD='test --remote-data' ASTROPY_VERSION=lts
+
+#         # Try older numpy versions
+#         - python: 2.7
+#           env: NUMPY_VERSION=1.8
+#         - python: 2.7
+#           env: NUMPY_VERSION=1.7
+#         - python: 2.7
+#           env: NUMPY_VERSION=1.6
+
+before_install:
+
+    # If there are matplotlib tests, comment these out to
+    # Make sure that interactive matplotlib backends work
+    # - export DISPLAY=:99.0
+    # - sh -e /etc/init.d/xvfb start
+
+install:
+
+    # We now use the ci-helpers package to set up our testing environment.
+    # This is done by using Miniconda and then using conda and pip to install
+    # dependencies. Which dependencies are installed using conda and pip is
+    # determined by the CONDA_DEPDENDENCIES and PIP_DEPENDENCIES variables,
+    # which should be space-delimited lists of package names. See the README
+    # in https://github.com/astropy/ci-helpers for information about the full
+    # list of environment variables that can be used to customize your
+    # environment. In some cases, ci-helpers may not offer enough flexibility
+    # in how to install a package, in which case you can have additional
+    # commands in the install: section below.
+
+    - git clone git://github.com/astropy/ci-helpers.git
+    - source ci-helpers/travis/setup_conda_$TRAVIS_OS_NAME.sh
+
+    # As described above, using ci-helpers, you should be able to set up an
+    # environment with dependencies installed using conda and pip, but in some
+    # cases this may not provide enough flexibility in how to install a
+    # specific dependency (and it will not be able to install non-Python 
+    # dependencies). Therefore, you can also include commands below (as
+    # well as at the start of the install section or in the before_install
+    # section if they are needed before setting up conda) to install any
+    # other dependencies.
+    
+script:
+   - python setup.py $SETUP_CMD
+
+after_success:
+    # If coveralls.io is set up for this package, uncomment the line
+    # below and replace "packagename" with the name of your package.
+    # The coveragerc file may be customized as needed for your package.
+    - if [[ $SETUP_CMD == 'test --coverage' ]]; then coveralls --rcfile='packagename/tests/coveragerc'; fi

@@ -1,0 +1,11 @@
+ignore-paths:
+  - .pylint-rcfile
+  - ah_bootstrap.py
+  - docs
+  - ez_setup.py
+  - ah_bootstrap.py
+  - donuts/_astropy_init.py
+  - donuts/conftest.py
+python-targets:
+  - 2
+  - 3
