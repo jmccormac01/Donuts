@@ -10,7 +10,7 @@ Donuts
 .. image:: http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat
     :target: http://www.astropy.org/
     :alt: Powered by astropy
- .. image:: https://travis-ci.org/jmccormac01/Donuts.svg?branch=master
+.. image:: https://travis-ci.org/jmccormac01/Donuts.svg?branch=master
     :target: https://travis-ci.org/jmccormac01/Donuts
     :alt: Travis Build Status
 .. image:: https://landscape.io/github/jmccormac01/Donuts/master/landscape.svg?style=flat
