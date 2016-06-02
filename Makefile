@@ -31,7 +31,7 @@ tox:
 	ctox
 
 package:
-	@rm -r dist 2>/dev/null
+	@-rm -r dist 2>/dev/null
 	@mkdir -p dist
 	python setup.py sdist bdist_wheel
 
