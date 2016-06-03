@@ -13,6 +13,9 @@ Donuts
 .. image:: https://travis-ci.org/jmccormac01/Donuts.svg?branch=master
     :target: https://travis-ci.org/jmccormac01/Donuts
     :alt: Travis Build Status
+.. image:: https://ci.appveyor.com/api/projects/status/gs02nr4o4n2vdu22?svg=true
+    :target: https://ci.appveyor.com/project/jmccormac01/Donuts
+    :alt: Appveyor Build Status
 .. image:: https://landscape.io/github/jmccormac01/Donuts/master/landscape.svg?style=flat
     :target: https://landscape.io/github/jmccormac01/Donuts/master
     :alt: Code Health
