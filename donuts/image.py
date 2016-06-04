@@ -376,9 +376,19 @@ class Image(object):
                 coarse[i][j] = np.median(data[(i * tilesizey):(i + 1) * tilesizey,
                                               (j * tilesizex):(j + 1) * tilesizex])
         # resample it out to data size
-        bkgmap = resize(
-            coarse,
-            (tilesizey * tile_num, tilesizex * tile_num),
-            mode='edge'
-        )
+        try:
+            bkgmap = resize(
+                coarse,
+                (tilesizey * tile_num, tilesizex * tile_num),
+                mode='edge'
+            )
+        except ValueError:
+            # "edge" mode is not supported on the current version of
+            # scikit-image
+            bkgmap = resize(
+                coarse,
+                (tilesizey * tile_num, tilesizex * tile_num),
+                mode='nearest'
+            )
+
         return bkgmap
