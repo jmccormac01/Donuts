@@ -37,9 +37,17 @@ except ImportError:
         a_h_path = os.path.abspath(os.path.join('..', 'astropy_helpers'))
         if os.path.isdir(a_h_path):
             sys.path.insert(1, a_h_path)
-        sys.path.insert(0, '..')
 
-from donuts_version import VERSION
+try:
+    from donuts_version import VERSION
+except ImportError:
+    if os.path.basename(os.getcwd()) == 'docs':
+        sys.path.insert(0, '..')
+    else:
+        sys.path.insert(0, '.')
+    from donuts_version import VERSION
+
+
 # Load all of the global Astropy configuration
 from astropy_helpers.sphinx.conf import *
 
