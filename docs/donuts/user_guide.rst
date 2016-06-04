@@ -37,7 +37,10 @@ The example below shows typical usage of the ``donuts`` api:
     >>> # for each image, compute the x/y translation required
     ... # to align the images onto the reference image
     >>> for image in science_image_names:
-    ...     x, y = d.measure_shift(checkimage=image)
+    ...     shift_result = d.measure_shift(checkimage=image)
+    ...     x = shift_result.x
+    ...     y = shift_result.y
+    ...     # Also check out shift_result.sky_background
     ...     print(x, y)
 
 Further detail
@@ -123,12 +126,14 @@ A summary of the object's settings can be seen using:
 Computing per-image offsets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-With a ``Donuts`` object, the x/y translation required to align the
-image into the reference image is given by the ``measure_shift`` method,
-e.g.:
+With a :class:`~donuts.Donuts` object, the x/y translation required to align
+the image into the reference image is given by the
+:py:meth:`~donuts.Donuts.measure_shift` method, which returns an
+:class:`~donuts.image.Image` object.  e.g.:
 
 .. doctest-skip::
 
-    >>> x, y = d.measure_shift(checkimage='image.fits')
+    >>> shift_result = d.measure_shift(checkimage='image.fits')
+    >>> x, y = shift_result.x, shift_result.y
 
-x and y are returned in pixel units.
+``x`` and ``y`` are returned in pixel units.
