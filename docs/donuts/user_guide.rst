@@ -137,3 +137,15 @@ the image into the reference image is given by the
     >>> x, y = shift_result.x, shift_result.y
 
 ``x`` and ``y`` are returned in pixel units.
+
+Looking at the computation intermediate products
+------------------------------------------------
+
+The :class:`~donuts.image.Image` object returned by :py:meth:`~donuts.Donuts.measure_shift`
+contains some products of the image normalisation procedure. Products available
+are:
+
+* ``raw_region``: the image pixels used, contained in the trimmed region of the chip
+* ``sky_background``: the computed sky background in ``raw_region``
+* ``backsub_region``: the sky-subtracted region used for image alignment
+* ``proj_x/proj_y``: the 1-D image projection arrays calculated from ``backsub_region``
