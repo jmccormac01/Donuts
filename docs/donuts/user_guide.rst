@@ -46,7 +46,7 @@ The example below shows typical usage of the ``donuts`` api:
 Further detail
 --------------
 
-More explanation of the ``Donuts`` constructor parameters are given
+More explanation of the :class:`~donuts.Donuts` constructor parameters are given
 below.
 
 Defining the reference image

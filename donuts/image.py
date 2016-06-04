@@ -11,7 +11,7 @@ from scipy.fftpack import fft, ifft
 
 class Image(object):
     '''Low level class which handles the image transformations and cross
-    correlation with another ``Image`` class.
+    correlation with another :class:`~donuts.image.Image` class.
     '''
 
     def __init__(self, data, header=None):
@@ -37,8 +37,8 @@ class Image(object):
 
         Returns
         -------
-        self : ``Image``
-            The current ``Image`` instance
+        self : :class:`~donuts.image.Image`
+            The current :class:`~donuts.image.Image` instance
 
         Raises
         ------
@@ -65,7 +65,7 @@ class Image(object):
     def trim(self, prescan_width=0, overscan_width=0, border=64):
         '''Remove the optional prescan and overscan from the image, as well
         as the outer `n` rows/colums of the image. Finally ensure the imaging
-        region is the correct dimensions for `skimage.transform.resize`
+        region is the correct dimensions for :py:func:`skimage.transform.resize`
         (i.e. a multiple of 16.)
 
         Parameters
@@ -85,8 +85,8 @@ class Image(object):
 
         Returns
         -------
-        self : ``Image``
-            The current ``Image`` instance
+        self : :class:`~donuts.image.Image`
+            The current :class:`~donuts.image.Image` instance
 
         Raises
         ------
@@ -126,7 +126,8 @@ class Image(object):
         return self
 
     def remove_background(self, ntiles=32):
-        '''Subtract the background from the image. See ``_generate_bkg_map`` for
+        '''Subtract the background from the image. See
+        :py:meth:`~donuts.image.Image._generate_bkg_map` for
         more details
 
         Parameters
@@ -137,8 +138,8 @@ class Image(object):
 
         Returns
         -------
-        self : ``Image``
-            The current ``Image`` instance
+        self : :class:`~donuts.image.Image`
+            The current :class:`~donuts.image.Image` instance
 
 
         Raises
@@ -159,14 +160,15 @@ class Image(object):
     def compute_projections(self):
         '''
         Compute the projection profiles. Follows the following logic:
-            * if the image has not been trimmed and not background subtracted,
-            then use the raw pixels
-            * otherwise if the image has been trimmed then use the trimmed
-            pixels
-            * otherwise use the background subtracted pixels
 
-        See ``_projection_from_image`` for details of the projection
-        calculation.
+        * if the image has not been trimmed and not background subtracted,
+          then use the raw pixels
+        * otherwise if the image has been trimmed then use the trimmed
+          pixels
+        * otherwise use the background subtracted pixels
+
+        See :py:meth:`~donuts.image.Image._projection_from_image`
+        for details of the projection calculation.
 
         Parameters
         ----------
@@ -174,8 +176,8 @@ class Image(object):
 
         Returns
         -------
-        self : ``Image``
-            The current ``Image`` instance
+        self : :class:`~donuts.image.Image`
+            The current :class:`~donuts.image.Image` instance
 
         Raises
         ------
@@ -196,22 +198,23 @@ class Image(object):
 
     def compute_offset(self, reference_image):
         '''
-        Given another ``Image`` object, compute the shift in pixel units.
+        Given another :class:`~donuts.image.Image` object, compute the shift
+        in pixel units.
 
         This method sets ``self.x`` and ``self.y`` to the pixel shift, and
-        returns the instance so in effect the user gets a "new" ``Image``
-        instance with these variables set.
+        returns the instance so in effect the user gets a "new"
+        :class:`~donuts.image.Image` instance with these variables set.
 
         Parameters
         ----------
-        reference_image : ``Image``
+        reference_image : :class:`~donuts.image.Image`
             The reference image to compare to. Typically when called using the
-            ``Donuts`` class this will be whatever was defined as the
-            "reference" image
+            :class:`~donuts.Donuts` class this will be whatever was defined as
+            the "reference" image
         Returns
         -------
-        self : ``Image``
-            The current ``Image`` instance
+        self : :class:`~donuts.image.Image`
+            The current :class:`~donuts.image.Image` instance
 
         Raises
         ------
@@ -231,14 +234,14 @@ class Image(object):
     def preconstruct_hook(self):
         '''Hook to modify the class before any standard processing
 
-        To add functionality, alter ``self.raw_image``
+        To add functionality, alter :py:meth:`~donuts.image.Image.raw_image`
         '''
         pass
 
     def postconstruct_hook(self):
         '''Hook to modify the class after any standard processing
 
-        To add functionality, alter ``self.backsub_region``
+        To add functionality, alter :py:meth:`~donuts.image.Image.backsub_region`
         '''
         pass
 
