@@ -379,6 +379,6 @@ class Image(object):
         bkgmap = resize(
             coarse,
             (tilesizey * tile_num, tilesizex * tile_num),
-            mode='nearest'
+            mode='edge'
         )
         return bkgmap
