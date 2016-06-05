@@ -14,7 +14,7 @@ Donuts
     :target: https://travis-ci.org/jmccormac01/Donuts
     :alt: Travis Build Status
 .. image:: https://ci.appveyor.com/api/projects/status/gs02nr4o4n2vdu22?svg=true
-    :target: https://ci.appveyor.com/project/jmccormac01/Donuts
+    :target: https://ci.appveyor.com/project/JamesMcCormac/Donuts
     :alt: Appveyor Build Status
 .. image:: https://landscape.io/github/jmccormac01/Donuts/master/landscape.svg?style=flat
     :target: https://landscape.io/github/jmccormac01/Donuts/master
