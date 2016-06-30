@@ -1,5 +1,12 @@
 # Change log
 
+[0.2.1]
+
+## Changes
+
+- Fixed bug in background image shape measurement
+- Updated User Guide documentation
+
 [Unreleased]
 
 ## Changes
