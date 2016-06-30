@@ -146,7 +146,7 @@ class Image(object):
         ------
         None
         '''
-        dim_x, dim_y = self.raw_region.shape
+        dim_y, dim_x = self.raw_region.shape
         tilesize_x, tilesize_y = dim_x // ntiles, dim_y // ntiles
         self.sky_background = self._generate_bkg_map(
             data=self.raw_region,
