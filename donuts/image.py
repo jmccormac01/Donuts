@@ -99,11 +99,31 @@ class Image(object):
         None
         '''
         if region_extent is not None:
-            # TODO: check for errors
+            if not isinstance(region_extent, (list, tuple, np.ndarray)):
+                raise TypeError(
+                    'Invalid type for `region_extent`. '
+                    'Must be list, tuple or numpy array'
+                )
+
+            nparams = len(region_extent)
+            if nparams != 4:
+                raise TypeError(
+                    'Incorrect number of parameters for `region_extent`. '
+                    'Should be 4, got {}'.format(nparams)
+                )
+
             x1, x2, y1, y2 = region_extent
+
+            if x2 < x1 or y2 < y1:
+                raise TypeError(
+                    'Invalid region dimensions. x1 should be < x2 '
+                    'and y1 should be < y2'
+                )
+
             self.raw_region = self.raw_image[
                 y1:y2, x1:x2
             ]
+
         else:
             if overscan_width > 0 and prescan_width > 0:
                 image_section = self.raw_image[
