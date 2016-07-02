@@ -75,6 +75,11 @@ class TestTrimming(object):
         testvalue = image.trim()
         assert testvalue is image
 
+    def test_manual_region_choosing(self):
+        image = Image(generate_image(2048, 2048))
+        image.trim(region_extent=[30, 100, 80, 450])
+        assert image.raw_region.shape == (450 - 80, 100 - 30)
+
 
 class TestImageNormalisation(object):
 

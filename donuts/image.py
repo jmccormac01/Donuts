@@ -62,7 +62,8 @@ class Image(object):
         self.raw_region = self.raw_region / self.exposure_time_value
         return self
 
-    def trim(self, prescan_width=0, overscan_width=0, border=64):
+    def trim(self, prescan_width=0, overscan_width=0, border=64,
+             region_extent=None):
         '''Remove the optional prescan and overscan from the image, as well
         as the outer `n` rows/colums of the image. Finally ensure the imaging
         region is the correct dimensions for :py:func:`skimage.transform.resize`
@@ -83,6 +84,11 @@ class Image(object):
             assuming that they are not "typical", a common case with edge
             effects in CCDs.
 
+        region_extent : [x1, x2, y1, y2]
+            Instead of trimming the region down, specify the exact pixel ranges
+            to use for the subtraction. This is useful e.g. if the imaging
+            region of the chip changes position between targets.
+
         Returns
         -------
         self : :class:`~donuts.image.Image`
@@ -91,39 +97,50 @@ class Image(object):
         Raises
         ------
         None
-
-
         '''
-        if overscan_width > 0 and prescan_width > 0:
-            image_section = self.raw_image[:, prescan_width:-overscan_width]
-        elif overscan_width > 0:
-            image_section = self.raw_image[:, :-overscan_width]
-        elif prescan_width > 0:
-            image_section = self.raw_image[:, prescan_width:]
+        if region_extent is not None:
+            # TODO: check for errors
+            x1, x2, y1, y2 = region_extent
+            self.raw_region = self.raw_image[
+                y1:y2, x1:x2
+            ]
         else:
-            image_section = self.raw_image
+            if overscan_width > 0 and prescan_width > 0:
+                image_section = self.raw_image[
+                    :, prescan_width:-overscan_width
+                ]
+            elif overscan_width > 0:
+                image_section = self.raw_image[
+                    :, :-overscan_width
+                ]
+            elif prescan_width > 0:
+                image_section = self.raw_image[
+                    :, prescan_width:
+                ]
+            else:
+                image_section = self.raw_image
 
-        dy, dx = image_section.shape
+            dy, dx = image_section.shape
 
-        # check if the CCD is a funny shape. Normal CCDs should divide by 16
-        # with no remainder. NITES for example does not (1030,1057)
-        # instead of (1024,1024)
-        rx = dx % 16
-        ry = dy % 16
-        base = 512
+            # check if the CCD is a funny shape. Normal CCDs should divide by
+            # 16 with no remainder. NITES for example does not (1030,1057)
+            # instead of (1024,1024)
+            rx = dx % 16
+            ry = dy % 16
+            base = 512
 
-        if rx > 0 or ry > 0:
-            dimx = int(dx // base) * base
-            dimy = int(dy // base) * base
-        else:
-            dimx = dx
-            dimy = dy
+            if rx > 0 or ry > 0:
+                dimx = int(dx // base) * base
+                dimy = int(dy // base) * base
+            else:
+                dimx = dx
+                dimy = dy
 
-        # get the reference data, with tweaked shape if needed
-        self.raw_region = image_section[
-            border:dimy - border, border:dimx - border
-        ]
-        return self
+            # get the reference data, with tweaked shape if needed
+            self.raw_region = image_section[
+                border:dimy - border, border:dimx - border
+            ]
+            return self
 
     def remove_background(self, ntiles=32):
         '''Subtract the background from the image. See
