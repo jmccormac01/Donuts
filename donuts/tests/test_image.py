@@ -84,6 +84,7 @@ class TestTrimming(object):
         (1, 'Invalid type for `region_extent`'),
         ([1, 2, 3], 'Incorrect number of parameters for `region_extent`. Should be 4, got 3'),
         ([1, 2, 2, 1], 'Invalid region dimensions. x1 should be < x2 and y1 should be < y2'),
+        ([0, 2047, 0, 4096], 'Region larger than the image (2048x2048)'),
     ])
     def test_manual_region_with_errors(self, extent, msg):
         image = Image(generate_image(2048, 2048))

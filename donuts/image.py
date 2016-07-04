@@ -120,6 +120,11 @@ class Image(object):
                     'and y1 should be < y2'
                 )
 
+            if (x1 < 0) or (y1 < 0) or (x2 >= self.raw_image.shape[1]) or (y2 >= self.raw_image.shape[0]):
+                raise TypeError('Region larger than the image ({x}x{y})'.format(
+                    x=self.raw_image.shape[1], y=self.raw_image.shape[0]
+                ))
+
             self.raw_region = self.raw_image[
                 y1:y2, x1:x2
             ]
