@@ -69,7 +69,7 @@ class Donuts(object):
 
     def construct_object(self, filename):
         '''Builds an ``image_class`` instance which performs most of the work.
-        See the ``Image`` class for more information.
+        See the :class:`~donuts.image.Image` class for more information.
 
         Parameters
         ----------
@@ -146,10 +146,10 @@ class Donuts(object):
 
         Returns
         -------
-        image: ``Image``
-            Instance of an ``Image`` object, which has the ``x`` and ``y``
+        image: :class:`~donuts.image.Image`
+            Instance of an :class:`~donuts.image.Image` object, which has the ``x`` and ``y``
             atributes storing the value of the shift between the chosen image
-            and reference image (passed to the ``Donuts`` constructor)
+            and reference image (passed to the :class:`~donuts.Donuts` constructor)
 
         Raises
         ------

@@ -5,15 +5,15 @@ Advanced
 For those who want more control over how the data is transformed, we provide a
 number of places to hook into the process.
 
-``Image`` class
----------------
+:class:`~donuts.image.Image` class
+----------------------------------
 
 This class really encapsulates the process of transforming a science image, and
-computing the separation between processed images. The ``Donuts`` class is merely
-a high level API over the ``Image`` class.
+computing the separation between processed images. The :class:`~donuts.Donuts` class is merely
+a high level API over the :class:`~donuts.image.Image` class.
 
 The easiest way to customise the transformation process (trimming, normalisation
-and background subtraction) is to subclass ``Image`` and override the
+and background subtraction) is to subclass :class:`~donuts.image.Image` and override the
 ``preconstruct_hook`` and ``postconstruct_hook`` methods, for example::
 
     from donuts.image import Image
@@ -26,7 +26,7 @@ and background subtraction) is to subclass ``Image`` and override the
         def postconstruct_hook(self):
             self.backsub += self.med_image
 
-Then to "install" this custom class into the process, construct a ``Donuts``
+Then to "install" this custom class into the process, construct a :class:`~donuts.Donuts`
 object using the ``image_class`` parameter of the constructor::
 
     from donuts import Donuts
