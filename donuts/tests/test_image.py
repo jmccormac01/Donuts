@@ -277,6 +277,8 @@ class TestComputeOffset(object):
 
         assert self.is_close(test_image.x, expected[0])
         assert self.is_close(test_image.y, expected[1])
+        assert self.is_close(test_image.shifts[0], test_image.x)
+        assert self.is_close(test_image.shifts[1], test_image.y)
 
     # Lots of mocking for functions that will fail without proper setup
     @mock.patch.object(Image, '_assert_projections')
