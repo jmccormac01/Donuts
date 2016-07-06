@@ -158,3 +158,9 @@ class Donuts(object):
         checkimage = self.construct_object(checkimage_filename)
         checkimage.compute_offset(self.reference_image)
         return checkimage
+
+    def measure_shifts(self, *args, **kwargs):
+        '''Convenience wrapper if the user does not want the intermediate
+        :class:`~donuts.image.Image` object, this just returns the x/y coordinates
+        '''
+        return self.measure_shift(*args, **kwargs).shifts

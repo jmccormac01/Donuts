@@ -43,3 +43,7 @@ def test_full_integration2():
         result = d.measure_shift(checkimage_filename=test_check_image)
         assert np.isclose(result.x.value, x_ex, rtol=0.1, atol=0.1)
         assert np.isclose(result.y.value, y_ex, rtol=0.1, atol=0.1)
+
+        x, y = d.measure_shifts(checkimage_filename=test_check_image)
+        assert np.isclose(x.value, x_ex, rtol=0.1, atol=0.1)
+        assert np.isclose(y.value, y_ex, rtol=0.1, atol=0.1)
