@@ -27,6 +27,11 @@ class Image(object):
         self.x = None
         self.y = None
 
+    @property
+    def shifts(self):
+        '''Convenience property returning the x/y offsets as a tuple'''
+        return (self.x, self.y)
+
     def normalise(self, exposure_keyword='EXPOSURE'):
         '''Convert the image data into ADU per second
 
