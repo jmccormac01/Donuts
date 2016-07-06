@@ -84,10 +84,10 @@ class Image(object):
             assuming that they are not "typical", a common case with edge
             effects in CCDs.
 
-        region_extent : [x1, x2, y1, y2]
+        region_extent : [x, y, width, height]
             Instead of trimming the region down, specify the exact pixel ranges
-            to use for the subtraction. This is useful e.g. if the imaging
-            region of the chip changes position between targets.
+            to use for the subtraction. x and y are the (0-indexed) coordinate
+            of the lower left pixel.
 
         Returns
         -------
@@ -112,18 +112,22 @@ class Image(object):
                     'Should be 4, got {}'.format(nparams)
                 )
 
-            x1, x2, y1, y2 = region_extent
+            x1, y1, w, h = region_extent
 
-            if x2 < x1 or y2 < y1:
+            if w <= 0 or h <= 0:
                 raise TypeError(
-                    'Invalid region dimensions. x1 should be < x2 '
-                    'and y1 should be < y2'
+                    'Invalid width or height. '
+                    'Width and height must both be positive and > 0'
                 )
 
-            if (x1 < 0) or (y1 < 0) or (x2 >= self.raw_image.shape[1]) or (y2 >= self.raw_image.shape[0]):
-                raise TypeError('Region larger than the image ({x}x{y})'.format(
-                    x=self.raw_image.shape[1], y=self.raw_image.shape[0]
-                ))
+            x2, y2 = x1 + w, y1 + h
+
+            image_shape = self.raw_image.shape
+
+            if y2 > image_shape[0] or x2 > image_shape[1]:
+                raise TypeError(
+                    'Region is larger than the image'
+                )
 
             self.raw_region = self.raw_image[
                 y1:y2, x1:x2

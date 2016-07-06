@@ -78,20 +78,31 @@ class TestTrimming(object):
     def test_manual_region_choosing(self):
         image = Image(generate_image(2048, 2048))
         image.trim(region_extent=[30, 100, 80, 450])
-        assert image.raw_region.shape == (450 - 80, 100 - 30)
+        assert image.raw_region.shape == (450, 80)
 
     @pytest.mark.parametrize('extent,msg', [
-        (1, 'Invalid type for `region_extent`'),
-        ([1, 2, 3], 'Incorrect number of parameters for `region_extent`. Should be 4, got 3'),
-        ([1, 2, 2, 1], 'Invalid region dimensions. x1 should be < x2 and y1 should be < y2'),
-        ([0, 2047, 0, 4096], 'Region larger than the image (2048x2048)'),
+        (1, 'invalid type for `region_extent`'),
+        ([1, 2, 3], 'incorrect number of parameters for `region_extent`. should be 4, got 3'),
+        ([0, 0, -1, 1], 'width and height must both be positive and > 0'),
+        ([0, 0, 0, 1], 'width and height must both be positive and > 0'),
+        ([0, 0, 4096, 4096], 'region is larger than the image'),
     ])
     def test_manual_region_with_errors(self, extent, msg):
         image = Image(generate_image(2048, 2048))
         with pytest.raises(TypeError) as err:
             image.trim(region_extent=extent)
 
-        assert msg in str(err)
+        assert msg in str(err).lower()
+
+    @pytest.mark.parametrize('extent,imgx,imgy,expectedx,expectedy', [
+        ([0, 0, 2048, 2048], 2048, 2048, 2048, 2048),
+        ([0, 0, 1024, 512], 1024, 512, 1024, 512),
+    ])
+    def test_manual_region_non_square_images(self, extent, imgx, imgy,
+                                             expectedx, expectedy):
+        image = Image(generate_image(imgy, imgx))
+        image.trim(region_extent=extent)
+        assert image.raw_region.shape == (expectedy, expectedx)
 
 
 class TestImageNormalisation(object):
