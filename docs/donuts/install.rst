@@ -29,7 +29,7 @@ If you wish to install the latest version from the git repository, either run::
 
 or clone the source somewhere, and install through ``setup.py``::
 
-    git clone https://github.com/jmccormac01/Donuts
+    git clone https://github.com/jmccormac01/Donuts__
     cd Donuts
     git checkout <branch>       # optionally check out a branch
     python setup.py install
