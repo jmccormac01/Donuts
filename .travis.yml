@@ -4,7 +4,6 @@ python:
     - 2.7
     - 3.4
     - 3.5
-    - 3.6
 
 # Setting sudo to false opts in to Travis-CI container-based builds.
 sudo: false
@@ -71,6 +70,10 @@ matrix:
         # This py2.7 test fails now with astropy-dev
         #- python: 2.7
         #  env: SETUP_CMD='test --remote-data' ASTROPY_VERSION=development PIP_DEPENDENCIES='mock'
+
+        # Conda's version of numpy 1.10 does not support python 3.6 so bump the version
+        - python: 3.6
+          env: SETUP_CMD='test --remote-data' NUMPY_VERSION=1.11
 
         - python: 3.5
           env: SETUP_CMD='test --remote-data' ASTROPY_VERSION=development
