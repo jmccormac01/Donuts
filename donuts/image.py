@@ -62,7 +62,8 @@ class Image(object):
         self.raw_region = self.raw_region / self.exposure_time_value
         return self
 
-    def trim(self, prescan_width=0, overscan_width=0, border=64):
+    def trim(self, prescan_width=0, overscan_width=0,
+             scan_direction='x', border=64):
         '''Remove the optional prescan and overscan from the image, as well
         as the outer `n` rows/colums of the image. Finally ensure the imaging
         region is the correct dimensions for :py:func:`skimage.transform.resize`
@@ -77,6 +78,10 @@ class Image(object):
         overscan_width : int
             Remove the last ``overscan_width`` columns from the image, assuming
             the are not in the imaging region.
+
+        scan_direction : 'x' | 'y'
+            Direction along which the pre/overscans occur. If along left and right
+            side, select 'x'. If along the top and bottom of the image select 'y'
 
         border : int
             Ignore the first/last ``border`` rows/columns from the image,
@@ -95,11 +100,20 @@ class Image(object):
 
         '''
         if overscan_width > 0 and prescan_width > 0:
-            image_section = self.raw_image[:, prescan_width:-overscan_width]
+            if scan_direction == 'x':
+                image_section = self.raw_image[:, prescan_width:-overscan_width]
+            else:
+                image_section = self.raw_image[prescan_width:-overscan_width, :]
         elif overscan_width > 0:
-            image_section = self.raw_image[:, :-overscan_width]
+            if scan_direction == 'x':
+                image_section = self.raw_image[:, :-overscan_width]
+            else:
+                image_section = self.raw_image[:-overscan_width, :]
         elif prescan_width > 0:
-            image_section = self.raw_image[:, prescan_width:]
+            if scan_direction == 'x':
+                image_section = self.raw_image[:, prescan_width:]
+            else:
+                image_section = self.raw_image[prescan_width:, :]
         else:
             image_section = self.raw_image
 

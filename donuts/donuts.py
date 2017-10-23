@@ -19,7 +19,8 @@ class Donuts(object):
 
     def __init__(self, refimage, image_ext=0, exposure='EXPTIME',
                  normalise=True, subtract_bkg=True, prescan_width=0,
-                 overscan_width=0, border=64, ntiles=32, image_class=Image):
+                 overscan_width=0, scan_direction='x', border=64,
+                 ntiles=32, image_class=Image):
         '''Initialise and generate a reference image.
         This reference image is used for measuring frame to frame offsets.
 
@@ -39,6 +40,8 @@ class Donuts(object):
             Width of prescan region (left) in pixels. The default is 0.
         overscan_width : int, optional
             Width of overscan region (right) in pixels. The default is 0.
+        scan_direction : str, optional
+            Direction along which the pre/overscan regions are found ('x' | 'y')
         border : int, optional
             Width of exclusion area to avoid errors from CCD edge effects.
             The default is 64.
@@ -62,6 +65,7 @@ class Donuts(object):
         self.subtract_bkg = subtract_bkg
         self.prescan_width = prescan_width
         self.overscan_width = overscan_width
+        self.scan_direction = scan_direction
         self.border = border
         self.refimage_filename = refimage
 
@@ -94,6 +98,7 @@ class Donuts(object):
         image.trim(
             prescan_width=self.prescan_width,
             overscan_width=self.overscan_width,
+            scan_direction=self.scan_direction,
             border=self.border
         )
 
