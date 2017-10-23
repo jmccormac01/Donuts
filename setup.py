@@ -23,7 +23,6 @@ from astropy_helpers.version_helpers import generate_version_py
 # Get some values from the setup.cfg
 try:
     from ConfigParser import ConfigParser
-    conf = config.ConfigParser()
 except ImportError:
     from configparser import ConfigParser
 conf = ConfigParser()
