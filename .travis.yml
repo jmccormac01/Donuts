@@ -74,8 +74,9 @@ matrix:
 #           env: SETUP_CMD='build_sphinx -w'
 
         # Try Astropy development version
-        - python: 2.7
-          env: SETUP_CMD='test --remote-data' ASTROPY_VERSION=development PIP_DEPENDENCIES='mock'
+        # This py2.7 test fails now with astropy-dev
+        #- python: 2.7
+        #  env: SETUP_CMD='test --remote-data' ASTROPY_VERSION=development PIP_DEPENDENCIES='mock'
 
         - python: 3.5
           env: SETUP_CMD='test --remote-data' ASTROPY_VERSION=development
@@ -133,4 +134,4 @@ after_success:
     # If coveralls.io is set up for this package, uncomment the line
     # below and replace "packagename" with the name of your package.
     # The coveragerc file may be customized as needed for your package.
-    - if [[ $SETUP_CMD == 'test --coverage' ]]; then coveralls --rcfile='packagename/tests/coveragerc'; fi
+    - if [[ $SETUP_CMD == 'test --coverage' ]]; then coveralls --rcfile='donuts/tests/coveragerc'; fi
