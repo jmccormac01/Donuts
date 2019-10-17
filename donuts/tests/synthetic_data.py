@@ -18,7 +18,7 @@ def generate_signals(shape, positions):
     for position in positions:
         x, y = position
         try:
-            out[y, x] = 1.
+            out[int(y), int(x)] = 1.
         except IndexError:
             pass
     return out
