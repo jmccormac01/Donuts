@@ -245,12 +245,22 @@ class Image(object):
         ------
         None
         '''
-        if self.backsub_region is None and self.raw_region is None:
-            region = self.raw_image
-        elif self.backsub_region is None:
+        #if self.backsub_region is None and self.raw_region is None:
+        #    region = self.raw_image
+        #elif self.backsub_region is None:
+        #    region = self.raw_region
+        #else:
+        #    region = self.backsub_region
+
+        # redo which regions we use depending on what's available
+        if self.backsub_region_downweighted_edges is not None:
+            region = self.backsub_region_downweighted_edges
+        elif self.backsub_region_downweighted_edges is None and self.backsub_region is not None:
+            region = self.backsub_region
+        elif self.backsub_region_downweighted_edges is None and self.backsub_region is None and self.raw_region is not None:
             region = self.raw_region
         else:
-            region = self.backsub_region
+            region = self.raw_image
 
         assert len(region.shape) == 2
 
