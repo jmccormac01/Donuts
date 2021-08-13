@@ -192,7 +192,7 @@ class Image(object):
         ------
         None
         '''
-        if self.backsub_region:
+        if self.backsub_region is not None:
             # work out the down weighting map
 
             # get image size and mid points

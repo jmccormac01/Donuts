@@ -36,7 +36,7 @@ package:
 	@mkdir -p dist
 	python setup.py sdist bdist_wheel
 
-upload: package
+upload:
 	twine upload dist/*
 
 sign:
