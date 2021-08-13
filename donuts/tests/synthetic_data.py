@@ -1,7 +1,10 @@
 '''Synthetic data test suite'''
 import numpy as np
+import astropy
 from astropy.io import fits
 from scipy.ndimage import gaussian_filter
+
+astropy_major_version = int(astropy.__version__.split('.')[0])
 
 def generate_background(shape, background_level, background_sigma):
     '''
@@ -52,4 +55,7 @@ def save_synthetic_data(filename, *args, **kwargs):
     '''Save the synthetic data to file '''
     data = generate_synthetic_data(*args, **kwargs)
     phdu = fits.PrimaryHDU(data)
-    phdu.writeto(filename, clobber=True)
+    if astropy_major_version < 2:
+        phdu.writeto(filename, clobber=True)
+    else:
+        phdu.writeto(filename, overwrite=True)

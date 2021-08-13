@@ -21,6 +21,7 @@ class Image(object):
         self.raw_region = None
         self.sky_background = None
         self.backsub_region = None
+        self.backsub_region_downweighted_edges = None
         self.exposure_time_value = None
         self.proj_x = None
         self.proj_y = None
@@ -170,6 +171,53 @@ class Image(object):
         )
         self.backsub_region = self.raw_region - self.sky_background
         return self
+
+    def downweight_edges(self):
+        '''
+        Sometimes if there is a very bright star near the edge of the CCD
+        it can mess up the corrections. Here we add a gradual downweight
+        of the edges based on their Euclidean distance from the image
+        centre. This can only be done for images that were background subtracted first
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        self : :class:`~donuts.image.Image`
+            The current :class:`~donuts.image.Image` instance
+
+        Raises
+        ------
+        None
+        '''
+        if self.backsub_region:
+            # work out the down weighting map
+
+            # get image size and mid points
+            y_len, x_len = self.backsub_region.shape
+            x_mid = x_len/2
+            y_mid = y_len/2
+
+            # make some indexes to make a grid for distances
+            x_inds = np.arange(x_len)
+            y_inds = np.arange(y_len)
+
+            # make the grid
+            x_inds, y_inds = np.ogrid[:y_len, :x_len]
+
+            # work out the weighting grid
+            arr = ((y_inds - y_mid) ** 2 + (x_inds - x_mid) ** 2) ** 0.5 + 1
+            arr_n = arr / np.max(arr)
+            downweight_map = np.abs(arr_n - 1)
+
+            # then make a new array with the down weighted edges for
+            # computing the image projections
+            self.backsub_region_downweighted_edges = self.backsub_region * downweight_map
+
+        return self
+
 
     def compute_projections(self):
         '''

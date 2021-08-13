@@ -18,9 +18,9 @@ class Donuts(object):
     '''
 
     def __init__(self, refimage, image_ext=0, exposure='EXPTIME',
-                 normalise=True, subtract_bkg=True, prescan_width=0,
-                 overscan_width=0, scan_direction='x', border=64,
-                 ntiles=32, image_class=Image):
+                 normalise=True, subtract_bkg=True, downweight_edges=True,
+                 prescan_width=0, overscan_width=0, scan_direction='x',
+                 border=64, ntiles=32, image_class=Image):
         '''Initialise and generate a reference image.
         This reference image is used for measuring frame to frame offsets.
 
@@ -36,6 +36,8 @@ class Donuts(object):
             Convert image counts to counts/s. The default is True.
         subtract_bkg : bool, optional
             Subtract the sky background. The default is True.
+        downweight_edges : bool, optional
+            Downweight contribution from pixels near the image edge. The default is True.
         prescan_width : int, optional
             Width of prescan region (left) in pixels. The default is 0.
         overscan_width : int, optional
@@ -63,6 +65,7 @@ class Donuts(object):
         self.exposure_keyname = exposure
         self.normalise = normalise
         self.subtract_bkg = subtract_bkg
+        self.downweight_edges = downweight_edges
         self.prescan_width = prescan_width
         self.overscan_width = overscan_width
         self.scan_direction = scan_direction
@@ -111,6 +114,8 @@ class Donuts(object):
             image.remove_background(
                 ntiles=self.ntiles
             )
+            if self.downweight_edges:
+                image.downweight_edges()
 
         image.postconstruct_hook()
         image.compute_projections()

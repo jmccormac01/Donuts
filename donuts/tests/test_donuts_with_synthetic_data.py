@@ -1,5 +1,6 @@
 '''Test to run Donuts on synthetic data'''
 from astropy.tests.helper import pytest
+import astropy
 import numpy as np
 from astropy.io import fits
 from .synthetic_data import (
@@ -7,6 +8,8 @@ from .synthetic_data import (
     save_synthetic_data,
 )
 from ..donuts import Donuts
+
+astropy_major_version = int(astropy.__version__.split('.')[0])
 
 np.random.seed(42)
 
@@ -36,7 +39,10 @@ def write_data(filename, data):
 
     phdu = fits.PrimaryHDU(full_array)
     phdu.header['EXPOSURE'] = 1.
-    phdu.writeto(filename, clobber=True)
+    if astropy_major_version < 2:
+        phdu.writeto(filename, clobber=True)
+    else:
+        phdu.writeto(filename, overwrite=True)
 
 
 def shift_positions(positions, dx=0, dy=0):
