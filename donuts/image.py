@@ -5,9 +5,10 @@ from scipy import (
     conjugate,
     polyfit,
 )
-from skimage.transform import resize
 from scipy.fftpack import fft, ifft
+from skimage.transform import resize
 
+# pylint: disable=invalid-name
 
 class Image(object):
     '''Low level class which handles the image transformations and cross
@@ -63,12 +64,12 @@ class Image(object):
         self.raw_region = self.raw_region / self.exposure_time_value
         return self
 
-    def trim(self, prescan_width=0, overscan_width=0,
-             scan_direction='x', border=64):
+    def calculate_image_geometry(self, prescan_width=0, overscan_width=0,
+                                 scan_direction='x', border=64, ntiles=32):
         '''Remove the optional prescan and overscan from the image, as well
         as the outer `n` rows/colums of the image. Finally ensure the imaging
         region is the correct dimensions for :py:func:`skimage.transform.resize`
-        (i.e. a multiple of 16.)
+        (i.e. a multiple of ntiles)
 
         Parameters
         ----------
@@ -89,6 +90,10 @@ class Image(object):
             assuming that they are not "typical", a common case with edge
             effects in CCDs.
 
+        ntiles : int
+            Number of tiles used to sample the sky background.
+            The default is 32.
+
         Returns
         -------
         self : :class:`~donuts.image.Image`
@@ -97,47 +102,101 @@ class Image(object):
         Raises
         ------
         None
-
-
         '''
+        fy, fx = self.raw_image.shape
+        cly, cuy = 0, fy
+        clx, cux = 0, fx
+
         if overscan_width > 0 and prescan_width > 0:
             if scan_direction == 'x':
                 image_section = self.raw_image[:, prescan_width:-overscan_width]
+                clx = prescan_width
+                cux = fx-overscan_width
             else:
                 image_section = self.raw_image[prescan_width:-overscan_width, :]
+                cly = prescan_width
+                cuy = fy-overscan_width
         elif overscan_width > 0:
             if scan_direction == 'x':
                 image_section = self.raw_image[:, :-overscan_width]
+                cux = fx-overscan_width
             else:
                 image_section = self.raw_image[:-overscan_width, :]
+                cuy = fy-overscan_width
         elif prescan_width > 0:
             if scan_direction == 'x':
                 image_section = self.raw_image[:, prescan_width:]
+                clx = prescan_width
             else:
                 image_section = self.raw_image[prescan_width:, :]
+                cly = prescan_width
         else:
             image_section = self.raw_image
 
-        dy, dx = image_section.shape
+        # apply border if needed
+        if border > 0:
+            cly += border
+            cuy -= border
+            clx += border
+            cux -= border
+            image_section = image_section[border:-border, border:-border]
 
-        # check if the CCD is a funny shape. Normal CCDs should divide by 16
-        # with no remainder. NITES for example does not (1030,1057)
-        # instead of (1024,1024)
-        rx = dx % 16
-        ry = dy % 16
-        base = 512
+        # check we have an image section that is equally divisible by ntiles,
+        # apply final tweak if not.
+        ry, rx = image_section.shape
+        trim_y = ry % ntiles
+        trim_x = rx % ntiles
 
-        if rx > 0 or ry > 0:
-            dimx = int(dx // base) * base
-            dimy = int(dy // base) * base
-        else:
-            dimx = dx
-            dimy = dy
+        # trim y
+        if trim_y > 0:
+            print(f"Warning, removing y={trim_y} pixels from image upper edge")
+            image_section = image_section[:-trim_y, :]
+            cuy -= trim_y
+        if trim_x > 0:
+            print(f"Warning, removing x={trim_x} pixels from image right edge")
+            image_section = image_section[:, :-trim_x]
+            cux -= trim_x
 
-        # get the reference data, with tweaked shape if needed
-        self.raw_region = image_section[
-            border:dimy - border, border:dimx - border
-        ]
+        # final check that the shapes agree
+        finaly, finalx = image_section.shape
+        dy = cuy-cly
+        dx = cux-clx
+        assert finaly == dy, "Y image geometry is wrong!"
+        assert finalx == dx, "X image geometry is wrong!"
+
+        # return the image geometry for storage in the donuts class
+        return cly, cuy, clx, cux
+
+    def trim(self, cly, cuy, clx, cux):
+        '''Take the image geometry and slice out the useful part of the
+        data for shift calculations
+
+        Parameters
+        ----------
+        cly : int
+            Lower Y coordinate for raw_region
+
+        cuy : int
+            Upper Y coordinate for raw_region
+
+        clx : int
+            Lower X coordinate for raw_region
+
+        cux : int
+            Upper X coordinate for raw_region
+
+        Returns
+        -------
+        self : :class:`~donuts.image.Image`
+            The current :class:`~donuts.image.Image` instance
+
+
+        Raises
+        ------
+        None
+
+        '''
+        self.raw_region = self.raw_image[cly:cuy, clx:cux]
         return self
 
     def remove_background(self, ntiles=32):
@@ -338,7 +397,8 @@ class Image(object):
                 'Please call the #compute_projections method' % self
             )
 
-    def _find_solution(self, z_pos, phi_ref_check_m):
+    @staticmethod
+    def _find_solution(z_pos, phi_ref_check_m):
         '''Covert the CCF into a shift solution for individual axes
         The location of the peak in the CCF is converted to a shift
         in pixels here. Sub pixel resolution is achieved by solving a
@@ -411,7 +471,8 @@ class Image(object):
         z_pos_y = np.where(phi_ref_check_m_y == z_y)
         return z_pos_x, z_pos_y, phi_ref_check_m_x, phi_ref_check_m_y
 
-    def _projection_from_image(self, data, axis):
+    @staticmethod
+    def _projection_from_image(data, axis):
         '''Function to define the actual process used to compute the
         projections.  Partially as a point to stub, perhaps as a point to
         override in a subclass, but also it is easier to understand as it's a
@@ -419,7 +480,8 @@ class Image(object):
         '''
         return np.sum(data, axis=axis)
 
-    def _generate_bkg_map(self, data, tile_num, tilesizex, tilesizey):
+    @staticmethod
+    def _generate_bkg_map(data, tile_num, tilesizex, tilesizey):
         '''Create a background map.
         This map may be subtracted from each image before doing the cross correlation
 

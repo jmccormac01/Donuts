@@ -20,7 +20,8 @@ class Donuts(object):
     def __init__(self, refimage, image_ext=0, exposure='EXPTIME',
                  normalise=True, subtract_bkg=True, downweight_edges=True,
                  prescan_width=0, overscan_width=0, scan_direction='x',
-                 border=64, ntiles=32, image_class=Image):
+                 border=64, ntiles=32, calculation_area_override=None,
+                 image_class=Image):
         '''Initialise and generate a reference image.
         This reference image is used for measuring frame to frame offsets.
 
@@ -50,6 +51,12 @@ class Donuts(object):
         ntiles : int, optional
             Number of tiles used to sample the sky background.
             The default is 32.
+        calculation_area_override : list|tuple, optional
+            Manually supplied coordinates for shift calculation image area
+            Image region is defined as (lower_y, upper_y, lower_x, upper_x)
+            e.g. to calculate shifts using the lower left corner with a 500 pix
+            square we'd supply:
+                (0, 500, 0, 500)
 
         Returns
         -------
@@ -72,6 +79,27 @@ class Donuts(object):
         self.border = border
         self.refimage_filename = refimage
 
+        # store the image geometry region corners
+        # NOTE: ugh, adding manual image area selection adds a crazy number of checks
+        # to be made, e.g. that upper bounds are greater than lower bounds, that they
+        # are positive, that they fall within the image etc etc.
+        # This is an advanced feature and people using this should know enough to
+        # supply the values correctly. I'll add a bunch of error checking here if
+        # it becomes an issue....
+        if calculation_area_override:
+            self.image_cly = calculation_area_override[0]
+            self.image_cuy = calculation_area_override[1]
+            self.image_clx = calculation_area_override[2]
+            self.image_cux = calculation_area_override[3]
+            self.image_geometry_set = True
+        else:
+            self.image_cly = None
+            self.image_cuy = None
+            self.image_clx = None
+            self.image_cux = None
+            self.image_geometry_set = False
+
+        # make a reference image object
         self.reference_image = self.construct_object(self.refimage_filename)
 
     def construct_object(self, filename):
@@ -98,12 +126,28 @@ class Donuts(object):
 
         image = self.image_class(image, header)
         image.preconstruct_hook()
-        image.trim(
-            prescan_width=self.prescan_width,
-            overscan_width=self.overscan_width,
-            scan_direction=self.scan_direction,
-            border=self.border
-        )
+
+        # get the image geometry
+        if not self.image_geometry_set:
+            print("Calculating image geometry...")
+            cly, cuy, clx, cux = image.calculate_image_geometry(
+                prescan_width=self.prescan_width,
+                overscan_width=self.overscan_width,
+                scan_direction=self.scan_direction,
+                border=self.border,
+                ntiles=self.ntiles
+            )
+            self.image_cly = cly
+            self.image_cuy = cuy
+            self.image_clx = clx
+            self.image_cux = cux
+            self.image_geometry_set = True
+
+        # trim the image to match the image geometry
+        image.trim(self.image_cly,
+                   self.image_cuy,
+                   self.image_clx,
+                   self.image_cux)
 
         if self.normalise:
             image.normalise(
