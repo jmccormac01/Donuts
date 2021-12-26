@@ -3,6 +3,7 @@ shifts between images in CCD data.
 '''
 from __future__ import print_function, with_statement, division
 from astropy.io import fits
+import numpy as np
 from .image import Image
 
 
@@ -21,7 +22,7 @@ class Donuts(object):
                  normalise=True, subtract_bkg=True, downweight_edges=True,
                  prescan_width=0, overscan_width=0, scan_direction='x',
                  border=64, ntiles=32, calculation_area_override=None,
-                 image_class=Image):
+                 image_pixel_mask=None, image_class=Image):
         '''Initialise and generate a reference image.
         This reference image is used for measuring frame to frame offsets.
 
@@ -57,6 +58,12 @@ class Donuts(object):
             e.g. to calculate shifts using the lower left corner with a 500 pix
             square we'd supply:
                 (0, 500, 0, 500)
+        image_pixel_mask : array, optional
+            Array of booleans (0|1 or False|True) where the affirmative corresponds
+            to the locations of pixels to be masked out from shift calculations
+            (e.g. the location of hot-pixels). This boolean array must have the same
+            shape as the imager sensor array, including any pre/overscan areas. The mask
+            is applied to the untrimmed image immediately after loading the data.
 
         Returns
         -------
@@ -78,6 +85,7 @@ class Donuts(object):
         self.scan_direction = scan_direction
         self.border = border
         self.refimage_filename = refimage
+        self.image_pixel_mask = image_pixel_mask
 
         # store the image geometry region corners
         # NOTE: ugh, adding manual image area selection adds a crazy number of checks
@@ -119,12 +127,22 @@ class Donuts(object):
         ------
         None
         '''
+        # load the data from disc
         with fits.open(filename) as hdulist:
             hdu = hdulist[self.image_ext]
             image = hdu.data
             header = hdu.header
 
-        image = self.image_class(image, header)
+        # apply masking if supplied, otherwise supply all False (no masking)
+        if self.image_pixel_mask:
+            masked_image = np.ma.array(image, mask=self.image_pixel_mask, fill_value=0)
+        else:
+            masked_image = np.ma.array(image, mask=np.zeros((image.shape)), fill_value=0)
+
+        # create the image object
+        image = self.image_class(masked_image, header)
+
+        # run the preconstruct hook
         image.preconstruct_hook()
 
         # get the image geometry
@@ -149,11 +167,13 @@ class Donuts(object):
                    self.image_clx,
                    self.image_cux)
 
+        # apply exposure time normalisation
         if self.normalise:
             image.normalise(
                 exposure_keyword=self.exposure_keyname
             )
 
+        # remove the sky background
         if self.subtract_bkg:
             image.remove_background(
                 ntiles=self.ntiles
@@ -161,9 +181,13 @@ class Donuts(object):
             if self.downweight_edges:
                 image.downweight_edges()
 
+        # run the postconstruct hook
         image.postconstruct_hook()
+
+        # compute the x and y image projections
         image.compute_projections()
 
+        # return the processed image object, ready for shift calculations
         return image
 
     def print_summary(self):

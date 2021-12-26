@@ -149,11 +149,11 @@ class Image(object):
 
         # trim y
         if trim_y > 0:
-            print(f"Warning, removing y={trim_y} pixels from image upper edge")
+            print("Warning, removing y={} pixels from image upper edge".format(trim_y))
             image_section = image_section[:-trim_y, :]
             cuy -= trim_y
         if trim_x > 0:
-            print(f"Warning, removing x={trim_x} pixels from image right edge")
+            print("Warning, removing x={} pixels from image right edge".format(trim_x))
             image_section = image_section[:, :-trim_x]
             cux -= trim_x
 
@@ -304,13 +304,6 @@ class Image(object):
         ------
         None
         '''
-        #if self.backsub_region is None and self.raw_region is None:
-        #    region = self.raw_image
-        #elif self.backsub_region is None:
-        #    region = self.raw_region
-        #else:
-        #    region = self.backsub_region
-
         # redo which regions we use depending on what's available
         if self.backsub_region_downweighted_edges is not None:
             region = self.backsub_region_downweighted_edges
