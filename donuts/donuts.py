@@ -113,11 +113,11 @@ class Donuts(object):
 
         # determine if we're using a mask, if so is it a str (load a fits file) or
         # an array which we can directly apply
-        if image_pixel_mask and isinstance(image_pixel_mask, str):
+        if image_pixel_mask is not None and isinstance(image_pixel_mask, str):
             # load the fits image
             with fits.open(image_pixel_mask) as fitsfile:
                 self.image_pixel_mask = fitsfile[0].data
-        elif image_pixel_mask and isinstance(image_pixel_mask, np.ndarray):
+        elif image_pixel_mask is not None and isinstance(image_pixel_mask, np.ndarray):
             # load the array as the mask
             self.image_pixel_mask = image_pixel_mask
         elif image_pixel_mask is None:
