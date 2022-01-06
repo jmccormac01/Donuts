@@ -1,5 +1,5 @@
+import warnings
 import numpy as np
-from astropy import log
 from astropy import units as u
 from scipy import (
     conjugate,
@@ -51,7 +51,7 @@ class Image(object):
         try:
             self.exposure_time_value = self.header[exposure_keyword]
         except KeyError:
-            log.warning(
+            warnings.warn(
                 'Exposure time keyword "{0}" not found, assuming 1.0'.format(
                     exposure_keyword)
             )
@@ -149,11 +149,11 @@ class Image(object):
 
         # trim y
         if trim_y > 0:
-            print("Warning, removing y={} pixels from image upper edge".format(trim_y))
+            warnings.warn("Removing y={} pixels from image upper edge".format(trim_y))
             image_section = image_section[:-trim_y, :]
             cuy -= trim_y
         if trim_x > 0:
-            print("Warning, removing x={} pixels from image right edge".format(trim_x))
+            warnings.warn("Removing x={} pixels from image right edge".format(trim_x))
             image_section = image_section[:, :-trim_x]
             cux -= trim_x
 

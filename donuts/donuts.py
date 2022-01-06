@@ -58,12 +58,17 @@ class Donuts(object):
             e.g. to calculate shifts using the lower left corner with a 500 pix
             square we'd supply:
                 (0, 500, 0, 500)
-        image_pixel_mask : array, optional
+        image_pixel_mask : array | str, optional
             Array of booleans (0|1 or False|True) where the affirmative corresponds
             to the locations of pixels to be masked out from shift calculations
             (e.g. the location of hot-pixels). This boolean array must have the same
             shape as the imager sensor array, including any pre/overscan areas. The mask
             is applied to the untrimmed image immediately after loading the data.
+
+            If a str is supplied this is assumed to be the path to a fits image on
+            disc that contains the image mask in the first (0th) image extension.
+            As above, the fits image must be a boolean array (0|1 or False|True) of
+            the same shape at the imager, including any pre/overscan regions.
 
         Returns
         -------
@@ -85,7 +90,6 @@ class Donuts(object):
         self.scan_direction = scan_direction
         self.border = border
         self.refimage_filename = refimage
-        self.image_pixel_mask = image_pixel_mask
 
         # store the image geometry region corners
         # NOTE: ugh, adding manual image area selection adds a crazy number of checks
@@ -106,6 +110,25 @@ class Donuts(object):
             self.image_clx = None
             self.image_cux = None
             self.image_geometry_set = False
+
+        # determine if we're using a mask, if so is it a str (load a fits file) or
+        # an array which we can directly apply
+        if image_pixel_mask and isinstance(image_pixel_mask, str):
+            # load the fits image
+            with fits.open(image_pixel_mask) as fitsfile:
+                self.image_pixel_mask = fitsfile[0].data
+        elif image_pixel_mask and isinstance(image_pixel_mask, np.ndarray):
+            # load the array as the mask
+            self.image_pixel_mask = image_pixel_mask
+        elif image_pixel_mask is None:
+            # no mask, leave it as None
+            self.image_pixel_mask = image_pixel_mask
+        else:
+            type_err_str = """Unhandled mask type, please supply one of the following:
+              1: A numpy array of booleans
+              2: A str containing the path to a fits image with the mask
+              3: None, for no masking"""
+            raise TypeError(type_err_str)
 
         # make a reference image object
         self.reference_image = self.construct_object(self.refimage_filename)
@@ -133,11 +156,17 @@ class Donuts(object):
             image = hdu.data
             header = hdu.header
 
-        # apply masking if supplied, otherwise supply all False (no masking)
-        if self.image_pixel_mask:
+        # use masked arrays regardless of masking or not
+        # by this point we should have an array or None
+        # None will work, but an array of the wrong shape will throw an error
+        # print some info if the shapes mismatch
+        try:
             masked_image = np.ma.array(image, mask=self.image_pixel_mask, fill_value=0)
-        else:
-            masked_image = np.ma.array(image, mask=np.zeros((image.shape)), fill_value=0)
+        except np.ma.core.MaskError:
+            mask_err_str = """Wrong mask shape for image
+            Image shape: {}
+            Mask shape: {}""".format(image.shape, self.image_pixel_mask.shape)
+            raise Exception(mask_err_str)
 
         # create the image object
         image = self.image_class(masked_image, header)
@@ -147,7 +176,6 @@ class Donuts(object):
 
         # get the image geometry
         if not self.image_geometry_set:
-            print("Calculating image geometry...")
             cly, cuy, clx, cux = image.calculate_image_geometry(
                 prescan_width=self.prescan_width,
                 overscan_width=self.overscan_width,
