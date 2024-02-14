@@ -1,7 +1,7 @@
 import warnings
 import numpy as np
 from astropy import units as u
-from scipy import (
+from numpy import (
     conjugate,
     polyfit,
 )
