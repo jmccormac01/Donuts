@@ -1,6 +1,6 @@
-astropy==1.1.2
+astropy>=6.1.0
 mock==2.0.0
-numpy==1.11.0
-scipy==0.17.0
+numpy>=1.26.0
+scipy>=1.13.0
 pytest-cov==2.2.1
-scikit-image==0.12.3
+scikit-image>=0.23.0

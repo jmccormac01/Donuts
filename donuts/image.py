@@ -1,10 +1,6 @@
 import warnings
 import numpy as np
 from astropy import units as u
-from scipy import (
-    conjugate,
-    polyfit,
-)
 from scipy.fftpack import fft, ifft
 from skimage.transform import resize
 
@@ -420,28 +416,28 @@ class Image(object):
             tst[0] = phi_ref_check_m[lra[0]].real
             tst[1] = phi_ref_check_m[lra[1]].real
             tst[2] = phi_ref_check_m[lra[2]].real
-            coeffs = polyfit(lra, tst, 2)
+            coeffs = np.polyfit(lra, tst, 2)
             solution = -(-coeffs[1] / (2 * coeffs[0]))
         elif z_pos[0][0] > len(phi_ref_check_m) / 2 and z_pos[0][0] != len(phi_ref_check_m) - 1:
             lra = [z_pos[0][0] - 1, z_pos[0][0], z_pos[0][0] + 1]
             tst[0] = phi_ref_check_m[lra[0]].real
             tst[1] = phi_ref_check_m[lra[1]].real
             tst[2] = phi_ref_check_m[lra[2]].real
-            coeffs = polyfit(lra, tst, 2)
+            coeffs = np.polyfit(lra, tst, 2)
             solution = len(phi_ref_check_m) + (coeffs[1] / (2 * coeffs[0]))
         elif z_pos[0][0] == len(phi_ref_check_m) - 1:
             lra = [-1, 0, 1]
             tst[0] = phi_ref_check_m[-2].real
             tst[1] = phi_ref_check_m[-1].real
             tst[2] = phi_ref_check_m[0].real
-            coeffs = polyfit(lra, tst, 2)
+            coeffs = np.polyfit(lra, tst, 2)
             solution = 1 + (coeffs[1] / (2 * coeffs[0]))
         else:  # if z_pos[0][0] == 0:
             lra = [1, 0, -1]
             tst[0] = phi_ref_check_m[-1].real
             tst[1] = phi_ref_check_m[0].real
             tst[2] = phi_ref_check_m[1].real
-            coeffs = polyfit(lra, tst, 2)
+            coeffs = np.polyfit(lra, tst, 2)
             solution = -coeffs[1] / (2 * coeffs[0])
         return solution * u.pixel
 
@@ -452,8 +448,8 @@ class Image(object):
         f_check_xproj = fft(self.proj_x)
         f_check_yproj = fft(self.proj_y)
         # cross correlate in and look for the maximium correlation
-        f_ref_xproj_conj = conjugate(f_ref_xproj)
-        f_ref_yproj_conj = conjugate(f_ref_yproj)
+        f_ref_xproj_conj = np.conjugate(f_ref_xproj)
+        f_ref_yproj_conj = np.conjugate(f_ref_yproj)
         complex_sum_x = f_ref_xproj_conj * f_check_xproj
         complex_sum_y = f_ref_yproj_conj * f_check_yproj
         phi_ref_check_m_x = ifft(complex_sum_x)
